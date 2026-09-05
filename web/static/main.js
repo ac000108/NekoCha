@@ -41,10 +41,10 @@ function _ensureUpdateModal() {
     return _updateModal;
 }
 
-function _showUpdateConfirm(latestVer, needDownload, onConfirm) {
+function _showUpdateConfirm(latestVer, desc, onConfirm) {
     const modal = _ensureUpdateModal();
     $('updVerNew').textContent = `v${latestVer}`;
-    $('updDesc').textContent = `需要下载 ${needDownload} 个文件`;
+    $('updDesc').textContent = desc;
     $('updProgressWrap').classList.add('hidden');
     $('updBtns').classList.remove('hidden');
     modal.classList.add('show');
@@ -60,60 +60,65 @@ function _showUpdateConfirm(latestVer, needDownload, onConfirm) {
     modal.onclick = (e) => { if (e.target === modal) doClose(); };
 }
 
-function _startBuiltinUpdate(latestVer) {
+function _startBuiltinUpdate(latestVer, filesMap) {
     const modal = _ensureUpdateModal();
     $('updVerNew').textContent = `v${latestVer}`;
-    $('updDesc').textContent = '正在检查差异文件...';
+    $('updDesc').textContent = '正在下载更新...';
     $('updBtns').classList.add('hidden');
     $('updProgressWrap').classList.remove('hidden');
     $('updProgressFill').style.width = '0%';
     $('updProgressText').textContent = '准备中...';
     modal.classList.add('show');
 
-    // 1. 拉 files.json + 算差异
-    api('/api/check-update-internal').then(data => {
-        if (!data.update_available || !data.files) {
-            $('updDesc').textContent = '已是最新版本';
-            $('updProgressText').textContent = '';
-            setTimeout(() => modal.classList.remove('show'), 1500);
-            return;
-        }
-        // 2. 开始下载
-        $('updDesc').textContent = `需要下载 ${data.need_download} 个文件`;
-        api('/api/start-update', 'POST', { files: data.files }).then(() => {
-            // 3. 轮询进度
-            const tick = setInterval(() => {
-                api('/api/update-progress').then(p => {
-                    const pct = p.percent || 0;
-                    $('updProgressFill').style.width = pct + '%';
-                    let txt = `${pct.toFixed(1)}%`;
-                    if (p.bytes_total > 0) {
-                        const mb = (p.bytes_downloaded / 1024 / 1024).toFixed(1);
-                        const totalMb = (p.bytes_total / 1024 / 1024).toFixed(1);
-                        txt = `${mb}/${totalMb} MB · ${pct.toFixed(1)}%`;
-                    }
-                    if (p.current_file) txt += ` · ${p.current_file}`;
-                    $('updProgressText').textContent = txt;
+    // 直接开始下载（filesMap 是 {rel: {sha256, size}} 或 {rel: sha256}）
+    api('/api/start-update', 'POST', { files: filesMap }).then(() => {
+        // 轮询进度：下载中 100ms，快完成时 50ms（等待进程退出）
+        let interval = 100;
+        const tick = () => {
+            api('/api/update-progress').then(p => {
+                const pct = p.percent || 0;
+                $('updProgressFill').style.width = pct + '%';
+                let txt = `${pct.toFixed(1)}%`;
+                if (p.bytes_total > 0) {
+                    const mb = (p.bytes_downloaded / 1024 / 1024).toFixed(1);
+                    const totalMb = (p.bytes_total / 1024 / 1024).toFixed(1);
+                    txt = `${mb}/${totalMb} MB · ${pct.toFixed(1)}%`;
+                }
+                if (p.current_file) txt += ` · ${p.current_file}`;
+                $('updProgressText').textContent = txt;
 
-                    if (p.phase === 'applying' || p.phase === 'done') {
-                        clearInterval(tick);
-                        $('updProgressFill').style.width = '100%';
-                        $('updProgressText').textContent = '下载完成，即将重启...';
-                        setTimeout(() => {
+                // 快下载完（>90%）或进入 applying 阶段 → 加速到 50ms 等进程结束
+                if (pct >= 90 || p.phase === 'applying') {
+                    interval = 50;
+                }
+
+                if (p.phase === 'applying' || p.phase === 'done') {
+                    $('updProgressFill').style.width = '100%';
+                    $('updProgressText').textContent = '下载完成，即将重启...';
+                    // 继续快速轮询等进程退出（bat 会把主进程杀了，API 会断连）
+                    const finalTick = setInterval(() => {
+                        api('/api/update-progress').catch(() => {
+                            // API 断连 = 主进程已退出（os._exit），bat 正在接力
+                            clearInterval(finalTick);
                             $('updProgressText').textContent = '启动新版本中...';
-                        }, 1000);
-                    }
-                    if (p.phase === 'error') {
-                        clearInterval(tick);
-                        $('updProgressText').textContent = '错误: ' + (p.error || '下载失败');
-                    }
-                }).catch(() => {});
-            }, 400);
-        }).catch(() => {
-            $('updProgressText').textContent = '启动更新失败';
-        });
+                        });
+                    }, 50);
+                    return;
+                }
+                if (p.phase === 'error') {
+                    $('updProgressText').textContent = '错误: ' + (p.error || '下载失败');
+                    return;
+                }
+
+                // 继续下一轮
+                setTimeout(tick, interval);
+            }).catch(() => {
+                setTimeout(tick, interval);
+            });
+        };
+        tick();
     }).catch(() => {
-        $('updDesc').textContent = '检查更新失败';
+        $('updProgressText').textContent = '启动更新失败';
     });
 }
 
@@ -137,13 +142,31 @@ function initVersionCheck() {
     });
 
     // 点击版本号 → 内置更新（差异下载 + bat 替换 + 自重启）
+    // 点击版本号 → 先检查差异 → 弹确认框 → 用户确认后才下载
     versionInfo.addEventListener('click', () => {
+        // 1. 先拉基础版本信息
         api('/api/version').then(v => {
             if (!v.update_available) {
                 showNotification('已是最新版本', 'success');
                 return;
             }
-            _startBuiltinUpdate(v.latest || '--');
+            // 2. 拉详细差异（文件数 + 大小）
+            api('/api/check-update-internal').then(data => {
+                if (!data.update_available || !data.files) {
+                    showNotification('已是最新版本', 'success');
+                    return;
+                }
+                // 3. 弹确认框
+                let desc = `发现新版本 v${v.latest}，需要下载 ${data.need_download} 个文件`;
+                if (data.need_download_bytes > 0) {
+                    const mb = (data.need_download_bytes / 1024 / 1024).toFixed(1);
+                    desc += `（约 ${mb} MB）`;
+                }
+                _showUpdateConfirm(v.latest, desc, () => {
+                    // 4. 用户确认 → 开始下载
+                    _startBuiltinUpdate(v.latest, data.files);
+                });
+            });
         });
     });
 

@@ -1,6 +1,6 @@
 {
-  "version": "1.0.21",
-  "updated_at": 1788584344,
+  "version": "1.0.22",
+  "updated_at": 1788585892,
   "files": {
     "81d243bd2c585b0f4821__mypyc.pyd": {
       "sha256": "52056f4b964f1bc0419064a374a32e56ef85ccb161166971d26f46a7490bd238",
@@ -19,8 +19,8 @@
       "size": 936448
     },
     "NekoCha.exe": {
-      "sha256": "c9e929d5564a20102074ff838f179e90825d4f5504afdecedc3bab159f9685d6",
-      "size": 57020928
+      "sha256": "27e1203d0a113dc14ecba3000b958df50934195d8116cfbdc9b5ae2aaa0221c8",
+      "size": 57024512
     },
     "pyexpat.pyd": {
       "sha256": "9d09acbd76537a9842b4f10acdd897fcdeb333505d4f104a8180fa74963a588a",
@@ -359,8 +359,8 @@
       "size": 24448
     },
     "web/static/main.js": {
-      "sha256": "94496849c0ff2203810548b9d11a902eed127a0d9bf32d290271dd9f1d4f9361",
-      "size": 75888
+      "sha256": "01da397485d7bb0717018a495ff94413d54e9857c73dc0a5e35c5c27fa5b8ab8",
+      "size": 76970
     },
     "web/static/style.css": {
       "sha256": "fbbd391887a19a8bd4f6c33c4922234e3540dd80b9ac5ca95dd697453051aadf",

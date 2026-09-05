@@ -1,12 +1,12 @@
 {
-  "version": "1.0.25",
-  "updated_at": 1788604027,
+  "version": "1.0.27",
+  "updated_at": 1788604789,
   "files": {
     "81d243bd2c585b0f4821__mypyc.pyd": "52056f4b964f1bc0419064a374a32e56ef85ccb161166971d26f46a7490bd238",
     "libcrypto-3-x64.dll": "1d54af6f7434a9e3be42acc1f192b0c66926582fb07ef7bb6b41226df7e73acd",
     "libffi-8.dll": "d1682615247e165ba8aa0cff59e090a0b1b6b90793e48733f441dff8d8e6328e",
     "libssl-3-x64.dll": "4cde268f01a6f81c989de12f2b20b3548deee452674123ad00da0aa0e31ecbd0",
-    "NekoCha.exe": "1167fc7880f8320c09e8520c37ffdf4a6c60dabe0fa0cfbf2077bacb24bf9ffa",
+    "NekoCha.exe": "46ad1820e08d6fe2dc7858f1647387dbd44e22468deb036ff9a450beef26db7c",
     "pyexpat.pyd": "9d09acbd76537a9842b4f10acdd897fcdeb333505d4f104a8180fa74963a588a",
     "python3.dll": "37b361cee2f40e922801986d7f750169b5ae95c9a2cf37ad899a690b4788754d",
     "python312.dll": "3cad6885f126d08ce38b2999fb127292a0399a3fa69bba65ca0bc2964c6c6168",

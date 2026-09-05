@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    
+    <title>NEKOxSYSTEM - 弹幕控制台</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❀</text></svg>">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme && savedTheme !== 'warm') {
+                const validThemes = ['cool-theme', 'lavender-theme', 'mint-theme'];
+                if (validThemes.includes(savedTheme)) {
+                    document.getElementById('htmlRoot').classList.add(savedTheme);
+                }
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- ============ 登录视图 ============ -->
+    <div id="loginView" class="full-screen-view hidden">
+        <div class="login-container">
+            <div class="login-header">
+                <h1 class="login-brand-title">NEKOxSYSTEM</h1>
+                <span class="login-brand-subtitle">DANMU_CONTROL</span>
+            </div>
+            <div class="login-qrcode-section">
+                <div class="qrcode-container-wrapper">
+                    <div class="qrcode-scan-line"></div>
+                    <div class="qrcode-corner top-left"></div>
+                    <div class="qrcode-corner top-right"></div>
+                    <div class="qrcode-corner bottom-left"></div>
+                    <div class="qrcode-corner bottom-right"></div>
+                    <img id="loginQrcodeImg" src="" alt="LOGIN_QR" class="qrcode-img">
+                </div>
+                <div id="loginStatus" class="login-status-text">点击登录</div>
+                <div class="login-hint">USE BILI APP TO SCAN</div>
+                <button id="loginStartBtn" class="btn primary">SCAN_QR</button>
+            </div>
+            <div class="login-alert-section">
+                <div class="login-alert-label">📱 风控推送 webhook（可选）</div>
+                <div class="login-alert-hint">支持 Meow / Bark / PushDeer 等，格式如 http://xxx/{title}/{content}</div>
+                <div class="login-alert-row">
+                    <input type="text" id="alertWebhookInput" class="alert-webhook-input" placeholder="http://api.chuckfang.com/xxx/{title}/{content}">
+                    <button id="alertSaveBtn" class="btn tiny">保存</button>
+                    <button id="alertTestBtn" class="btn tiny">测试</button>
+                </div>
+                <div id="alertMsg" class="login-alert-msg"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ 主应用视图 ============ -->
+    <div id="mainAppView" class="hidden">
+        <div class="app-container">
+            <header class="header">
+                <div class="header-left">
+                    <button class="theme-toggle-btn" id="themeToggleBtn"></button>
+                    <div class="header-brand">
+                        <h1 class="brand-title">NEKOxSYSTEM</h1>
+                        <span class="brand-subtitle">DANMU_CONTROL</span>
+                    </div>
+                </div>
+                
+                <div class="header-center">
+                    <!-- 房间列表页：显示添加房间输入框 -->
+                    <div id="roomsHeader" class="view-header-section">
+                        <div class="input-group">
+                            <span class="input-prefix">📡</span>
+                            <input type="text" id="newRoomIdInput" placeholder="ADD_ROOM_ID" class="room-input-inline">
+                        </div>
+                        <button id="addRoomBtn" class="btn primary tiny">ADD</button>
+                    </div>
+                    
+                    <!-- 房间详情页：显示返回按钮和房间信息 -->
+                    <div id="detailHeader" class="view-header-section hidden">
+                        <button id="backToListBtn" class="btn tiny">← 房间列表</button>
+                        <div class="current-room-info">
+                            <span class="current-room-id" id="currentRoomIdDisplay"></span>
+                            <span class="status-dot offline" id="detailStatus"></span>
+                            <span class="status-text" id="detailStatusText">未监听</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                    <!-- 版本号（低调：一行小字，有更新时变暖色 + 小圆点） -->
+                    <div class="version-info" id="versionInfo" title="点击检查更新">
+                        <span class="update-dot"></span>
+                        <span class="version-text" id="versionText">v--</span>
+                    </div>
+                    <div class="login-section hidden" id="loggedInSection">
+                        <div class="user-info">
+                            <div class="avatar-mini">
+                                <span id="userAvatarText">{{ username[0] if username else '?' }}</span>
+                            </div>
+                            <span class="user-name-mini" id="displayUsername">{{ username if username else '' }}</span>
+                        </div>
+                        <button class="btn tiny" id="logoutBtn">LOGOUT</button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ============ 房间列表视图 ============ -->
+            <div id="roomsListView" class="content-wrapper">
+                <aside class="sidebar rooms-sidebar">
+                    <div class="sidebar-header">
+                        <span id="roomsCount" class="sidebar-title">0 room</span>
+                    </div>
+                    <div class="room-list-container" id="roomListContainer">
+                        <div class="empty-state" id="emptyRoomList">
+                            <div class="empty-icon">📡</div>
+                            <div class="empty-text">还没有添加直播间</div>
+                            <div class="empty-hint">在上方输入房间号添加</div>
+                        </div>
+                    </div>
+                </aside>
+
+                <main class="main-content rooms-main">
+                    <div class="content-header">
+                        <div class="content-header-left">
+                            <h2 class="content-title">// ROOM_LIST</h2>
+                        </div>
+                    </div>
+                    <div class="rooms-grid" id="roomsGrid"></div>
+                </main>
+            </div>
+
+            <!-- ============ 房间详情视图 ============ -->
+            <div id="roomDetailView" class="content-wrapper hidden">
+                <aside class="sidebar">
+                    <div class="sidebar-header">
+                        <div class="sidebar-actions">
+                            <input type="text" id="pluginSearch" class="search-input" placeholder="SEARCH..." oninput="searchPlugins()">
+                            <button class="btn icon-only add-plugin-btn" id="addPluginBtn" onclick="showMarketModal()" title="插件市场">+</button>
+                        </div>
+                    </div>
+                    <div class="plugin-list" id="pluginList"></div>
+                </aside>
+
+                <main class="main-content">
+                    <div class="content-header">
+                        <div class="content-header-left">
+                            <h2 class="content-title" id="contentTitle">// WELCOME</h2>
+                            <div id="marketSearchContainer" class="market-search-container-header"></div>
+                        </div>
+                        <div id="saveBtnWrapper" class="save-btn-wrapper"></div>
+                    </div>
+                    <div id="pluginContentTab" class="tab-content active">
+                        <div id="pluginContentArea"></div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

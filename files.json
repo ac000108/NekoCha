@@ -1,0 +1,386 @@
+{
+  "version": "1.0.21",
+  "updated_at": 1788584344,
+  "files": {
+    "81d243bd2c585b0f4821__mypyc.pyd": {
+      "sha256": "52056f4b964f1bc0419064a374a32e56ef85ccb161166971d26f46a7490bd238",
+      "size": 219136
+    },
+    "libcrypto-3-x64.dll": {
+      "sha256": "1d54af6f7434a9e3be42acc1f192b0c66926582fb07ef7bb6b41226df7e73acd",
+      "size": 5932032
+    },
+    "libffi-8.dll": {
+      "sha256": "d1682615247e165ba8aa0cff59e090a0b1b6b90793e48733f441dff8d8e6328e",
+      "size": 27648
+    },
+    "libssl-3-x64.dll": {
+      "sha256": "4cde268f01a6f81c989de12f2b20b3548deee452674123ad00da0aa0e31ecbd0",
+      "size": 936448
+    },
+    "NekoCha.exe": {
+      "sha256": "c9e929d5564a20102074ff838f179e90825d4f5504afdecedc3bab159f9685d6",
+      "size": 57020928
+    },
+    "pyexpat.pyd": {
+      "sha256": "9d09acbd76537a9842b4f10acdd897fcdeb333505d4f104a8180fa74963a588a",
+      "size": 190464
+    },
+    "python3.dll": {
+      "sha256": "37b361cee2f40e922801986d7f750169b5ae95c9a2cf37ad899a690b4788754d",
+      "size": 56320
+    },
+    "python312.dll": {
+      "sha256": "3cad6885f126d08ce38b2999fb127292a0399a3fa69bba65ca0bc2964c6c6168",
+      "size": 6954496
+    },
+    "pythoncom312.dll": {
+      "sha256": "18e5d69b62110f48da01842f9ddfd99d06cc561f0866371714ec6534fcb4e5ec",
+      "size": 690688
+    },
+    "pywintypes312.dll": {
+      "sha256": "9bd7f8c39a84d7b1ea43bfcd33c04631c60f4ff28167e82bb21987cc1c353766",
+      "size": 136192
+    },
+    "select.pyd": {
+      "sha256": "5a28b7d60be8f64f7b8af6e68d6d465671a3f9fc4a672ebb5809d57766566fe0",
+      "size": 18944
+    },
+    "sqlite3.dll": {
+      "sha256": "f62eb83c9dfcfb17fc2e58534fcc0b7536affb40b269ab46d6cb5cd67c6ba9f5",
+      "size": 1558528
+    },
+    "unicodedata.pyd": {
+      "sha256": "f96337dd3f56a0ab4f904e31452a5c05fb0119632463f107fe57d4867f620067",
+      "size": 1126400
+    },
+    "vcruntime140.dll": {
+      "sha256": "1a130e77ef1995a593e7e621fa384c8404dcfa90ba705fb12ac8ad47b2812edb",
+      "size": 99840
+    },
+    "vcruntime140_1.dll": {
+      "sha256": "bd7fcd1973d05e358329c06c56435396f7e9c50fb6fe6a3b4d33eb7489a73e69",
+      "size": 29184
+    },
+    "win32api.pyd": {
+      "sha256": "8e09d7aa57dc33b663afd219fab21b6a70e9d98cc74a044df4d6cd94799d98c2",
+      "size": 138752
+    },
+    "win32evtlog.pyd": {
+      "sha256": "f6f8814147d3ca2761d351c0c86e7142b15b63605a502e5eb62d0bbd2b88e73f",
+      "size": 76800
+    },
+    "_asyncio.pyd": {
+      "sha256": "50bd131291858692d51935caa3fdd3849931cd794e84850dc5d017855766143e",
+      "size": 59392
+    },
+    "_brotli.pyd": {
+      "sha256": "1e4cf067342ee168410560db9bbba370a1b609abc028bff61a3dcc1274dfcd16",
+      "size": 856576
+    },
+    "_bz2.pyd": {
+      "sha256": "c464b6c94e123e3ec32b893093d162ef4edc3ee1dcecdb28e73c84b5a30c9d7d",
+      "size": 73216
+    },
+    "_cffi_backend.pyd": {
+      "sha256": "9af5e4f68a41f26b726f2e9424f9d58a4f5666189f6a48be95f406b257102aec",
+      "size": 181248
+    },
+    "_ctypes.pyd": {
+      "sha256": "6968228b18fc86b0b02f3dbf2c879c2c6f689a66130a72f35a3f0b2755d99e41",
+      "size": 116224
+    },
+    "_decimal.pyd": {
+      "sha256": "3f5057579bc3c859bd07d237c2f86248092cfda3eb044b4ba2625530146def2a",
+      "size": 244736
+    },
+    "_hashlib.pyd": {
+      "sha256": "20286c64126a874a57968c8cfd483bedd907b9133bac56d9c64fa2407892c2df",
+      "size": 54272
+    },
+    "_lzma.pyd": {
+      "sha256": "e335d7f6c588524dd92069c9d2554ae45cb0e6da5f1a0458c6f42bd7a0c44dfc",
+      "size": 147968
+    },
+    "_multiprocessing.pyd": {
+      "sha256": "5aedf510e8a5dd3756e09407eecf801e6ea1d454a51a9ad3b0af18e44ffa7fe4",
+      "size": 24064
+    },
+    "_overlapped.pyd": {
+      "sha256": "475577388258fd9e96b7c7da0176785e69a06bcabd1ae198b9ab684da57e4865",
+      "size": 44032
+    },
+    "_queue.pyd": {
+      "sha256": "ae122b8a31257116e2fe93a7e8f21b5b7a68fa66e7a5620abf0ec27669f4ee6d",
+      "size": 20992
+    },
+    "_socket.pyd": {
+      "sha256": "a4fe6b67451a47d65333060bf24654a2371819cff0c558b99dad95a9ed33d4b8",
+      "size": 71680
+    },
+    "_sqlite3.pyd": {
+      "sha256": "a15942f2af97b987b6b64de80828362b27344648d2a53a4739e1baf6f20e3df9",
+      "size": 112128
+    },
+    "_ssl.pyd": {
+      "sha256": "f6ccf5deb18e5046f553fb167281e509f536faa5c6b019c7d4019ef0514358c3",
+      "size": 166400
+    },
+    "_uuid.pyd": {
+      "sha256": "c219a8ccfefc5b3ccf402c1d6800c2cf46203e97bf744602f3bf57684fa1858c",
+      "size": 13824
+    },
+    "_wmi.pyd": {
+      "sha256": "7e6da91e0445ee7f2c98bbc5a2aec4b9ad568231f07381e49e5ea87ff26d3919",
+      "size": 26112
+    },
+    "aiohttp/_http_parser.pyd": {
+      "sha256": "2851a840224d139cc3c73534597b1c29b1ee6094661e27def04b3cd66d4199c8",
+      "size": 260608
+    },
+    "aiohttp/_http_writer.pyd": {
+      "sha256": "4831aaf297de92c195335564e4b13d3df50e3e88f25b22532c5b576ecb3a3a1e",
+      "size": 44544
+    },
+    "aiohttp/_websocket/mask.pyd": {
+      "sha256": "f3fad377929bfcb8afd9c4ceb31a81da2a8562e4d16bf97820c4983adfc984d4",
+      "size": 34816
+    },
+    "aiohttp/_websocket/reader_c.pyd": {
+      "sha256": "f6635ddd3d2b1d1606df0744a71433a84930d619b82ff10630761913f972a540",
+      "size": 138752
+    },
+    "certifi/cacert.pem": {
+      "sha256": "7cef540c6af3bf0a3c7d0070bd3fd7aae34f8aa805b408d1c27a01c8aeb305df",
+      "size": 236095
+    },
+    "charset_normalizer/cd.pyd": {
+      "sha256": "aec205186ce86077a5f8fb469e924cd5f7e183daed53f9de9362e77f3bf3637f",
+      "size": 10752
+    },
+    "charset_normalizer/md.pyd": {
+      "sha256": "68430911cc4fc8538328528c15b18119b59fba6def2d84ab221d223e6677ba66",
+      "size": 10752
+    },
+    "Crypto/Cipher/_pkcs1_decode.pyd": {
+      "sha256": "320ca46655bae21c964515726183ab86069d55262671798287072d9ff6bd54bc",
+      "size": 13312
+    },
+    "Crypto/Cipher/_raw_aes.pyd": {
+      "sha256": "520b343e44b5633bbc4fdcecc705a7f2eb6e55d082a1f3e4723ada9d7e5ea97d",
+      "size": 35328
+    },
+    "Crypto/Cipher/_raw_aesni.pyd": {
+      "sha256": "3818873f50418cbecde58150e9bffff7372d2c2067fc0b96ffac9482dfddd603",
+      "size": 15360
+    },
+    "Crypto/Cipher/_raw_arc2.pyd": {
+      "sha256": "1faa4c424bb33c9aff778a74ffc9468d281290d510e0ef44eae3730785efc1c9",
+      "size": 14848
+    },
+    "Crypto/Cipher/_raw_cbc.pyd": {
+      "sha256": "a5c300a4bda97236f9f8ffa57f9db0e5c0a0f1d8a5699389aa03dbf1aebd77fc",
+      "size": 11776
+    },
+    "Crypto/Cipher/_raw_cfb.pyd": {
+      "sha256": "cc2b5cec4b408492921f872aa7d6f6452fab6b1a6e561305865c6e709b784aca",
+      "size": 12288
+    },
+    "Crypto/Cipher/_raw_ctr.pyd": {
+      "sha256": "aeb1f2943a921684bd1edf752a6355e38de46466f56b3003f5b295fc30053732",
+      "size": 14848
+    },
+    "Crypto/Cipher/_raw_des.pyd": {
+      "sha256": "0f2b26d1cc382feceb879761ca3629ea2e3b84518d965fc196ae6df06bc0dbbb",
+      "size": 52736
+    },
+    "Crypto/Cipher/_raw_des3.pyd": {
+      "sha256": "b60ce99ebcb7946fa9b66660ce7bba919571e0f1a97fb4c7e8a385d86cfa5c58",
+      "size": 52736
+    },
+    "Crypto/Cipher/_raw_ecb.pyd": {
+      "sha256": "98f59f221f102db198c0d7425e8c93cdfa91ce5683d4cadd3f541e1dae0f79a2",
+      "size": 10240
+    },
+    "Crypto/Cipher/_raw_eksblowfish.pyd": {
+      "sha256": "29e1b1394c14c56253ab880730a1e11732c45ef40d90ec4ee1c5d3e614cc9504",
+      "size": 20480
+    },
+    "Crypto/Cipher/_raw_ocb.pyd": {
+      "sha256": "c8a77501cdc9304d919c16d41ba28c86c766de84ee463a0efd68c5cc3829af1d",
+      "size": 17920
+    },
+    "Crypto/Cipher/_raw_ofb.pyd": {
+      "sha256": "1f08af90b5854c58207cfbaed6f68dbec87bd30f1ed7da065ad46073e3761073",
+      "size": 11776
+    },
+    "Crypto/Cipher/_Salsa20.pyd": {
+      "sha256": "9df33c5ee086899c69bd4f3d776b85a493b72e1316c3f8772ac1215d70068a28",
+      "size": 13824
+    },
+    "Crypto/Hash/_BLAKE2s.pyd": {
+      "sha256": "d1ed1ca3c6802954cd8ca6f5e419c54a357b4a04bb802bab876b04b942a4b862",
+      "size": 13824
+    },
+    "Crypto/Hash/_ghash_clmul.pyd": {
+      "sha256": "63d9bbdac4e8e2c95b1a41eb7a2b42047b6a0c8d36447165e32167d3c7a57aee",
+      "size": 12800
+    },
+    "Crypto/Hash/_ghash_portable.pyd": {
+      "sha256": "ca4c4e24af0d7f879f9cb73df6e27f83441071dd466c366a4f4b467101e50e21",
+      "size": 12288
+    },
+    "Crypto/Hash/_keccak.pyd": {
+      "sha256": "393c54d090197d55d87619e99528d2e774c9157632115a07fcf35ee50681e78f",
+      "size": 15360
+    },
+    "Crypto/Hash/_MD5.pyd": {
+      "sha256": "ee469ab6d4dbdac22eea7bc40f3e2872442c649e03778d8d6b94a112da1e31aa",
+      "size": 15360
+    },
+    "Crypto/Hash/_SHA1.pyd": {
+      "sha256": "8f80524247c830d9bb590d025e15ec34d7d337a16e5c4422e2da0448d06c88a6",
+      "size": 17920
+    },
+    "Crypto/Hash/_SHA224.pyd": {
+      "sha256": "773fac9a1a65b31d22f79a5e4f035ddc00301b741873d334ee9902db1d1bebfd",
+      "size": 21504
+    },
+    "Crypto/Hash/_SHA256.pyd": {
+      "sha256": "2d57abc0274265d2ab891fba840c05a34831f61ab5c21d0540fc43bd28cc5ae3",
+      "size": 21504
+    },
+    "Crypto/Hash/_SHA384.pyd": {
+      "sha256": "38086fc4e0c53f5153571073995610ac91c454c6aa161588b651286a585526ec",
+      "size": 26112
+    },
+    "Crypto/Hash/_SHA512.pyd": {
+      "sha256": "adab3a8ef9daa73b1e9ca83d66a726c8ad256eed119ab2d7d3fcee10f8f013d1",
+      "size": 26112
+    },
+    "Crypto/Math/_modexp.pyd": {
+      "sha256": "fc122c8e0a1c236c2a0b20009ed710602545577ba34a9fafed71eb84e56a2e76",
+      "size": 30720
+    },
+    "Crypto/Protocol/_scrypt.pyd": {
+      "sha256": "00c9b6915dfb9ed91e8d40c78f6b536c5ccdabd2760fcf9501d0522e97e2d600",
+      "size": 12288
+    },
+    "Crypto/Util/.keep_dir.txt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "Crypto/Util/_cpuid_c.pyd": {
+      "sha256": "2af984819d9b1f95132520901b355eb85aa24d5efc6fc5ae9e77252ed03b7f4b",
+      "size": 10240
+    },
+    "Crypto/Util/_strxor.pyd": {
+      "sha256": "c77f18f1f7a377bc388de0104abf4868d6f0c2ef7ef2b97b34d875cfc3040aac",
+      "size": 10240
+    },
+    "curl_cffi/_wrapper.pyd": {
+      "sha256": "915307208b4f109017415b647ab5d209207298c04b9cc2bd27203771a77c17c5",
+      "size": 39936
+    },
+    "curl_cffi.libs/libcurl-impersonate-70adc4d9b16b25ba6b7778922d84043b.dll": {
+      "sha256": "70adc4d9b16b25ba6b7778922d84043b479dc168caf5f43837f48d4294aae751",
+      "size": 3881984
+    },
+    "frozenlist/_frozenlist.pyd": {
+      "sha256": "ac03ce4d67b103af56efa5a436954c6c5e4da0eafec878a31298f2b8ce9c6f96",
+      "size": 69632
+    },
+    "google/_upb/_message.pyd": {
+      "sha256": "44355715459ed47877ef03bc80201c5e8a2f50b3f83248d001910050f645e21a",
+      "size": 728649
+    },
+    "lxml/builder.pyd": {
+      "sha256": "cdd6dfe72b472034187f3b49b628ec5b8b92c9f305a984c55d2d257afdadd0a2",
+      "size": 86016
+    },
+    "lxml/etree.pyd": {
+      "sha256": "b5cef7d22ab972de3fee18e3787730ba74ecd12d5896eaa3660ebde418219669",
+      "size": 4033536
+    },
+    "lxml/objectify.pyd": {
+      "sha256": "ad4d1aabe85561cc06f503fb5758a45c3850a12f8719f1d66af06bd74553cf83",
+      "size": 1743360
+    },
+    "lxml/sax.pyd": {
+      "sha256": "57c38c31989fd3da9cedb47f762e42eae4bcaeb0e0698aaac9e7c3980d58d25b",
+      "size": 118784
+    },
+    "lxml/_elementpath.pyd": {
+      "sha256": "b445db501dba7797e2743e720d47106be9db86dff70aff1ac660da558545ca07",
+      "size": 144896
+    },
+    "markupsafe/_speedups.pyd": {
+      "sha256": "6107cd12e027357194947a9e4881aecf468790d2cb6ef4dd6ec77f5736232098",
+      "size": 13312
+    },
+    "multidict/_multidict.pyd": {
+      "sha256": "a7411fadf931b119427b537fcc6467f63179a7a7c29c603b89b1bc8be0733f8f",
+      "size": 80896
+    },
+    "PIL/_avif.pyd": {
+      "sha256": "38b5ca8582752f4f25b4a68dede6653573c37697d9c8100a82e52ecde282e573",
+      "size": 7892480
+    },
+    "PIL/_imaging.pyd": {
+      "sha256": "6dfd10a98bc81a1999e2b5ddb8be8c1cfb9a2c8e10258c56a52ee0d8930d3d7f",
+      "size": 2589696
+    },
+    "PIL/_imagingcms.pyd": {
+      "sha256": "46c59cf197b74954dfa01036d97938291573fa9ec339cd34f90fc7c870001cac",
+      "size": 269824
+    },
+    "PIL/_imagingft.pyd": {
+      "sha256": "fe615fedf586c7206a74bedecddbf58623ffdf57e90ca2f8bca062aebae138c0",
+      "size": 2166272
+    },
+    "PIL/_imagingmath.pyd": {
+      "sha256": "e1b3e6bc361fd8735df2c920c9878238dabaf797fbc13041ffaa26f635888d3a",
+      "size": 25600
+    },
+    "PIL/_webp.pyd": {
+      "sha256": "6af926fd1a58f3912b6f5e290ef37768c26017988bdd2217c0daa8e1107d4f71",
+      "size": 409600
+    },
+    "propcache/_helpers_c.pyd": {
+      "sha256": "c31395d9bc4730221b97e81708658827b7fdf3432152025d32b6a5520959ca1c",
+      "size": 62976
+    },
+    "web/static/icon.ico": {
+      "sha256": "81f65903f85acb3011148032fb02066c6a9d7b7aaa2f6a2561e06d6007de46af",
+      "size": 34717
+    },
+    "web/static/icon.png": {
+      "sha256": "c4a39f2d22ca202debf1c2d3f5fd9a87e76301bb0b2b08b21380781e1661c16d",
+      "size": 24448
+    },
+    "web/static/main.js": {
+      "sha256": "94496849c0ff2203810548b9d11a902eed127a0d9bf32d290271dd9f1d4f9361",
+      "size": 75888
+    },
+    "web/static/style.css": {
+      "sha256": "fbbd391887a19a8bd4f6c33c4922234e3540dd80b9ac5ca95dd697453051aadf",
+      "size": 58656
+    },
+    "web/static/fonts/noto-sans-sc.ttf": {
+      "sha256": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
+      "size": 17772300
+    },
+    "web/templates/main.html": {
+      "sha256": "b177238b09fa1d1a6f8af37b3a14317435493803336e036789b34b01a22480dd",
+      "size": 8327
+    },
+    "websockets/speedups.pyd": {
+      "sha256": "9141671dfee4a94c6eff43fd907656c5d9544e22d8f6c9eb50e4972b9dc50f9c",
+      "size": 11776
+    },
+    "yarl/_quoting_c.pyd": {
+      "sha256": "729d917642f071de55ec31924df4d180d26fafa34561b73f035a5fe1bd8eb0c9",
+      "size": 82944
+    }
+  }
+}

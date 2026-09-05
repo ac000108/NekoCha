@@ -12,12 +12,14 @@ document.addEventListener('DOMContentLoaded', function() {
     initVersionCheck();
 });
 
-// ==================== 版本更新 ====================
+// ==================== 版本更新（内嵌 + 自动重启） ====================
 
-let _notifiedUpdate = false;  // 避免重复弹 toast
-let _updateModal = null;     // 弹窗 DOM
+let _notifiedUpdate = false;
+let _updateModal = null;
+let _updatePollTimer = null;   // 进度轮询定时器
+let _restartPollTimer = null;  // 重启等待定时器
 
-function _ensureUpdateModal() {
+function _ensureUpdateConfirmModal() {
     if (_updateModal) return _updateModal;
     _updateModal = document.createElement('div');
     _updateModal.className = 'update-confirm-modal';
@@ -26,14 +28,20 @@ function _ensureUpdateModal() {
             <div class="update-confirm-title">
                 发现新版本 <span class="ver-new" id="updVerNew">v--</span>
             </div>
-            <div class="update-confirm-desc" id="updDesc">点击下方按钮开始下载更新</div>
-            <div class="upd-progress-wrap hidden" id="updProgressWrap">
-                <div class="upd-progress-bar"><div class="upd-progress-fill" id="updProgressFill"></div></div>
-                <div class="upd-progress-text" id="updProgressText">准备中...</div>
+            <div class="update-confirm-desc" id="updDesc">准备更新中...</div>
+            <div class="update-confirm-body" id="updBody"></div>
+            <div class="update-progress" id="updProgress" style="display:none">
+                <div class="update-progress-bar-wrap">
+                    <div class="update-progress-bar" id="updBar" style="width:0%"></div>
+                </div>
+                <div class="update-progress-info">
+                    <span id="updPct">0%</span>
+                    <span class="update-progress-speed" id="updSpeed"></span>
+                </div>
             </div>
             <div class="update-confirm-btns" id="updBtns">
-                <button class="btn-cancel">取消</button>
-                <button class="btn-confirm">立即更新</button>
+                <button class="btn-cancel" id="updBtnCancel">取消</button>
+                <button class="btn-confirm" id="updBtnConfirm">立即更新</button>
             </div>
         </div>
     `;
@@ -41,85 +49,176 @@ function _ensureUpdateModal() {
     return _updateModal;
 }
 
-function _showUpdateConfirm(latestVer, desc, onConfirm) {
-    const modal = _ensureUpdateModal();
-    $('updVerNew').textContent = `v${latestVer}`;
-    $('updDesc').textContent = desc;
-    $('updProgressWrap').classList.add('hidden');
-    $('updBtns').classList.remove('hidden');
-    modal.classList.add('show');
-
-    const doClose = () => modal.classList.remove('show');
-    const doConfirm = () => {
-        doClose();
-        onConfirm();
-    };
-
-    modal.querySelector('.btn-cancel').onclick = doClose;
-    modal.querySelector('.btn-confirm').onclick = doConfirm;
-    modal.onclick = (e) => { if (e.target === modal) doClose(); };
+function _closeUpdateModal() {
+    if (_updateModal) {
+        _updateModal.classList.remove('show');
+        // 清理定时器
+        if (_updatePollTimer) { clearInterval(_updatePollTimer); _updatePollTimer = null; }
+        if (_restartPollTimer) { clearInterval(_restartPollTimer); _restartPollTimer = null; }
+        // 重置 UI
+        _updateModal.querySelector('#updProgress').style.display = 'none';
+        _updateModal.querySelector('#updBtns').style.display = 'flex';
+        _updateModal.querySelector('#updBar').style.width = '0%';
+        _updateModal.querySelector('#updPct').textContent = '0%';
+        _updateModal.querySelector('#updSpeed').textContent = '';
+        _updateModal.querySelector('#updBtnConfirm').disabled = false;
+    }
 }
 
-function _startBuiltinUpdate(latestVer, filesMap) {
-    const modal = _ensureUpdateModal();
-    $('updVerNew').textContent = `v${latestVer}`;
-    $('updDesc').textContent = '正在下载更新...';
-    $('updBtns').classList.add('hidden');
-    $('updProgressWrap').classList.remove('hidden');
-    $('updProgressFill').style.width = '0%';
-    $('updProgressText').textContent = '准备中...';
+function _showRestarting() {
+    // 切换到"重启中"状态
+    const modal = _updateModal;
+    modal.querySelector('#updDesc').textContent = '更新完成，即将重启...';
+    modal.querySelector('#updProgress').style.display = 'none';
+    modal.querySelector('#updBtns').style.display = 'none';
+    modal.querySelector('#updBody').innerHTML = '<div class="update-restarting">⚡ 正在重启，请稍候...</div>';
+
+    // 每 500ms 检查一次 /health —— 新实例起来后会返回 200
+    _restartPollTimer = setInterval(async () => {
+        try {
+            const resp = await fetch('/health', { signal: AbortSignal.timeout(800) });
+            if (resp.ok) {
+                clearInterval(_restartPollTimer);
+                _restartPollTimer = null;
+                // 新实例已起来，刷新页面
+                showNotification('新版本已启动', 'success');
+                setTimeout(() => location.reload(), 300);
+            }
+        } catch (e) {
+            // 还没起来，继续等
+        }
+    }, 500);
+}
+
+function _runUpdateProgressPolling() {
+    // 每 80ms 轮询一次 /api/update-progress
+    _updatePollTimer = setInterval(async () => {
+        try {
+            const data = await api('/api/update-progress');
+            const bar = _updateModal.querySelector('#updBar');
+            const pctEl = _updateModal.querySelector('#updPct');
+            const speedEl = _updateModal.querySelector('#updSpeed');
+            const desc = _updateModal.querySelector('#updDesc');
+            const body = _updateModal.querySelector('#updBody');
+            const btnConfirm = _updateModal.querySelector('#updBtnConfirm');
+            const btnCancel = _updateModal.querySelector('#updBtnCancel');
+
+            if (data.pct !== undefined) bar.style.width = data.pct + '%';
+            if (data.state === 'done' || data.state === 'downloading') {
+                pctEl.textContent = Math.round(data.pct || 0) + '%';
+                if (data.speed_text) speedEl.textContent = data.speed_text;
+                if (data.text) desc.textContent = data.text;
+            }
+
+            if (data.state === 'done') {
+                clearInterval(_updatePollTimer);
+                _updatePollTimer = null;
+                _showRestarting();
+            } else if (data.state === 'error') {
+                clearInterval(_updatePollTimer);
+                _updatePollTimer = null;
+                desc.textContent = '更新失败';
+                body.innerHTML = `<div class="update-error">${data.error || data.text || '未知错误'}</div>`;
+                pctEl.textContent = '✕';
+                speedEl.textContent = '';
+                btnConfirm.style.display = 'none';
+                btnCancel.textContent = '关闭';
+            }
+        } catch (e) {
+            // 静默忽略（偶尔网络波动）
+        }
+    }, 80);
+}
+
+async function _doStartUpdate(modal) {
+    const btnConfirm = modal.querySelector('#updBtnConfirm');
+    const btnCancel = modal.querySelector('#updBtnCancel');
+    const desc = modal.querySelector('#updDesc');
+    const progress = modal.querySelector('#updProgress');
+
+    btnConfirm.disabled = true;
+    btnConfirm.textContent = '更新中...';
+    btnCancel.style.display = 'none';
+    progress.style.display = 'block';
+    desc.textContent = '正在启动更新...';
+
+    try {
+        const result = await api('/api/start-update', 'POST');
+        if (!result.success) {
+            desc.textContent = '更新启动失败';
+            modal.querySelector('#updBody').innerHTML =
+                `<div class="update-error">${result.error || '未知错误'}</div>`;
+            btnConfirm.disabled = false;
+            btnConfirm.textContent = '重试';
+            btnCancel.style.display = 'block';
+            return;
+        }
+        // 开始轮询进度
+        _runUpdateProgressPolling();
+    } catch (e) {
+        desc.textContent = '更新启动失败';
+        modal.querySelector('#updBody').innerHTML = `<div class="update-error">${e.message}</div>`;
+        btnConfirm.disabled = false;
+        btnConfirm.textContent = '重试';
+        btnCancel.style.display = 'block';
+    }
+}
+
+async function _showUpdateConfirm() {
+    const modal = _ensureUpdateConfirmModal();
+    const verNew = modal.querySelector('#updVerNew');
+    const desc = modal.querySelector('#updDesc');
+    const body = modal.querySelector('#updBody');
+    const btnConfirm = modal.querySelector('#updBtnConfirm');
+    const btnCancel = modal.querySelector('#updBtnCancel');
+    const progress = modal.querySelector('#updProgress');
+
+    // 重置 UI 状态
+    btnConfirm.disabled = false;
+    btnConfirm.textContent = '立即更新';
+    btnConfirm.style.display = 'inline-block';
+    btnCancel.style.display = 'inline-block';
+    btnCancel.textContent = '取消';
+    progress.style.display = 'none';
+    body.innerHTML = '';
+    desc.textContent = '准备检查差异...';
+    verNew.textContent = 'v--';
     modal.classList.add('show');
 
-    // 直接开始下载（filesMap 是 {rel: {sha256, size}} 或 {rel: sha256}）
-    api('/api/start-update', 'POST', { files: filesMap }).then(() => {
-        // 轮询进度：下载中 100ms，快完成时 50ms（等待进程退出）
-        let interval = 100;
-        const tick = () => {
-            api('/api/update-progress').then(p => {
-                const pct = p.percent || 0;
-                $('updProgressFill').style.width = pct + '%';
-                let txt = `${pct.toFixed(1)}%`;
-                if (p.bytes_total > 0) {
-                    const mb = (p.bytes_downloaded / 1024 / 1024).toFixed(1);
-                    const totalMb = (p.bytes_total / 1024 / 1024).toFixed(1);
-                    txt = `${mb}/${totalMb} MB · ${pct.toFixed(1)}%`;
-                }
-                if (p.current_file) txt += ` · ${p.current_file}`;
-                $('updProgressText').textContent = txt;
+    // 点击遮罩关闭
+    modal.onclick = (e) => { if (e.target === modal) _closeUpdateModal(); };
+    btnCancel.onclick = _closeUpdateModal;
+    btnConfirm.onclick = () => _doStartUpdate(modal);
 
-                // 快下载完（>90%）或进入 applying 阶段 → 加速到 50ms 等进程结束
-                if (pct >= 90 || p.phase === 'applying') {
-                    interval = 50;
-                }
-
-                if (p.phase === 'applying' || p.phase === 'done') {
-                    $('updProgressFill').style.width = '100%';
-                    $('updProgressText').textContent = '下载完成，即将重启...';
-                    // 继续快速轮询等进程退出（bat 会把主进程杀了，API 会断连）
-                    const finalTick = setInterval(() => {
-                        api('/api/update-progress').catch(() => {
-                            // API 断连 = 主进程已退出（os._exit），bat 正在接力
-                            clearInterval(finalTick);
-                            $('updProgressText').textContent = '启动新版本中...';
-                        });
-                    }, 50);
-                    return;
-                }
-                if (p.phase === 'error') {
-                    $('updProgressText').textContent = '错误: ' + (p.error || '下载失败');
-                    return;
-                }
-
-                // 继续下一轮
-                setTimeout(tick, interval);
-            }).catch(() => {
-                setTimeout(tick, interval);
-            });
-        };
-        tick();
-    }).catch(() => {
-        $('updProgressText').textContent = '启动更新失败';
-    });
+    // 调后端检查差异
+    try {
+        const diff = await api('/api/check-update-internal');
+        if (!diff.success) {
+            desc.textContent = '检查失败';
+            body.innerHTML = `<div class="update-error">${diff.error || '未知错误'}</div>`;
+            return;
+        }
+        verNew.textContent = `v${diff.latest_version || '--'}`;
+        const cnt = diff.files_to_download || 0;
+        if (cnt === 0) {
+            desc.textContent = '已是最新版本';
+            btnConfirm.style.display = 'none';
+            btnCancel.textContent = '好的';
+            return;
+        }
+        desc.textContent = `将下载 ${cnt} 个文件，更新完成后自动重启`;
+        // 展示前 6 个文件路径，避免太长
+        const sample = (diff.files || []).slice(0, 6).map(f => f.path);
+        if (sample.length > 0) {
+            body.innerHTML = `<div class="update-file-list">
+                ${sample.map(p => `<div class="update-file-item">${p}</div>`).join('')}
+                ${cnt > 6 ? `<div class="update-file-more">... 还有 ${cnt - 6} 个文件</div>` : ''}
+            </div>`;
+        }
+    } catch (e) {
+        desc.textContent = '检查失败';
+        body.innerHTML = `<div class="update-error">${e.message}</div>`;
+    }
 }
 
 function initVersionCheck() {
@@ -141,36 +240,18 @@ function initVersionCheck() {
         versionText.textContent = 'v--';
     });
 
-    // 点击版本号 → 内置更新（差异下载 + bat 替换 + 自重启）
-    // 点击版本号 → 先检查差异 → 弹确认框 → 用户确认后才下载
+    // 点击版本号 → 弹内嵌更新确认（不是启动外部更新器）
     versionInfo.addEventListener('click', () => {
-        // 1. 先拉基础版本信息
         api('/api/version').then(v => {
             if (!v.update_available) {
                 showNotification('已是最新版本', 'success');
                 return;
             }
-            // 2. 拉详细差异（文件数 + 大小）
-            api('/api/check-update-internal').then(data => {
-                if (!data.update_available || !data.files) {
-                    showNotification('已是最新版本', 'success');
-                    return;
-                }
-                // 3. 弹确认框
-                let desc = `发现新版本 v${v.latest}，需要下载 ${data.need_download} 个文件`;
-                if (data.need_download_bytes > 0) {
-                    const mb = (data.need_download_bytes / 1024 / 1024).toFixed(1);
-                    desc += `（约 ${mb} MB）`;
-                }
-                _showUpdateConfirm(v.latest, desc, () => {
-                    // 4. 用户确认 → 开始下载
-                    _startBuiltinUpdate(v.latest, data.files);
-                });
-            });
+            _showUpdateConfirm();
         });
     });
 
-    // 每 1 分钟同步后端状态
+    // 每 1 分钟同步后端版本状态
     setInterval(() => {
         api('/api/version').then(data => {
             if (data.update_available) {

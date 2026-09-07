@@ -692,6 +692,27 @@ html {
     font-size: 18px; font-weight: 500; border: 1px solid var(--accent-primary);
     background: transparent;
     color: var(--accent-primary);
+    position: relative;
+}
+
+/* 加号按钮上的可更新徽章 */
+.add-plugin-btn .update-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background: #ff4d4f;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+    border-radius: 8px;
+    border: 2px solid var(--bg-primary);
+    box-sizing: border-box;
+    font-family: var(--font-mono);
 }
 
 .sidebar-actions {

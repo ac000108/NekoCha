@@ -885,6 +885,10 @@ async function loadRoomPlugins(roomId) {
         allPlugins = data.installed || [];
         availablePlugins = data.available || [];
         window.allPluginsLoaded = true;
+
+        // 更新加号按钮红点（有更新可用时）
+        updatePluginBadge(data.updatable_count || 0);
+
         const searchInput = $('pluginSearch');
         const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
         if (keyword) {
@@ -986,6 +990,22 @@ function _renderAvailablePlugins(available) {
         </div>
         ${list}
     `;
+}
+
+function updatePluginBadge(count) {
+    // 更新加号按钮上的可更新插件红点/数字徽章
+    const btn = $('addPluginBtn');
+    if (!btn) return;
+    // 移除旧徽章
+    btn.classList.remove('has-update');
+    btn.querySelector('.update-badge')?.remove();
+    if (count > 0) {
+        btn.classList.add('has-update');
+        const badge = document.createElement('span');
+        badge.className = 'update-badge';
+        badge.textContent = count > 99 ? '99+' : count;
+        btn.appendChild(badge);
+    }
 }
 
 function renderSidebarPlugins(plugins) {

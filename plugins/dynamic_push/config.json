@@ -1,0 +1,11 @@
+{
+    "name": "dynamic_push",
+    "display_name": "动态推送",
+    "version": "1.0.1",
+    "description": "监听关注UP主的B站动态，生成卡片图片推送到QQ群",
+    "automatic": false,
+    "enabled": false,
+    "QQ群号": "2154029558",
+    "推送图片卡片": true,
+    "推送文字摘要": false
+}

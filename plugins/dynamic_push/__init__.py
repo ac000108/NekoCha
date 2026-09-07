@@ -137,7 +137,8 @@ def draw_dynamic_card(msg: dict) -> bytes:
         return cur_y + line_height
 
     def draw_line_fallback(draw_obj, img_obj, text, fnt, fb_fnt, color, x, y, max_width, line_height):
-        """逐字符绘制单行文字，主字体缺字时自动回退到 fallback 字体"""
+        """逐字符绘制单行文字，主字体缺字时自动回退到 fallback 字体。
+        返回绘制结束后的 y（含该行的 line_height），供下一行使用。"""
         cur_x = x
         for ch in text:
             use_font = fnt if char_in_font(fnt, ch) else fb_fnt
@@ -148,7 +149,7 @@ def draw_dynamic_card(msg: dict) -> bytes:
                 y += line_height
             draw_obj.text((cur_x, y), ch, fill=color, font=use_font)
             cur_x += w
-        return y
+        return y + line_height
 
 
     # ---- 提取消息内容 ----

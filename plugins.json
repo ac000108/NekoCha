@@ -1,5 +1,5 @@
 {
-  "updated_at": 1788799636,
+  "updated_at": 1788801012,
   "plugins": [
     {
       "name": "blind_box_stats",
@@ -261,8 +261,8 @@
     },
     {
       "name": "dynamic_push",
-      "display_name": "dynamic_push",
-      "version": "1.0.1",
+      "display_name": "动态推送",
+      "version": "1.0.2",
       "description": "监听关注UP主的B站动态，生成卡片图片推送到QQ群",
       "files": [
         {
@@ -272,8 +272,8 @@
         },
         {
           "path": "config.json",
-          "sha256": "62d72d8b7c50fe600cf89fe1c6e10999748488f087cef8c4cdc5bbb7bf60333c",
-          "size": 329
+          "sha256": "13b8fc2139e26c17d32ecf64ff19d4ea938d8805b75550003230fcb0fe00fa5c",
+          "size": 292
         },
         {
           "path": "fonts/Yozai-Regular.ttf",

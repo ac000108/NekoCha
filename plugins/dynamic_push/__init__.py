@@ -187,7 +187,7 @@ def draw_dynamic_card(msg: dict) -> bytes:
         cover_url = pics[0]
 
     # ---- 布局参数 ----
-    SCALE = 1.5
+    SCALE = 2.0
     W = int(720 * SCALE)
     MARGIN = int(24 * SCALE)
     content_width = W - MARGIN * 2
@@ -308,7 +308,7 @@ def draw_dynamic_card(msg: dict) -> bytes:
         y += card_h + s(16)
 
     buf = io.BytesIO()
-    img.save(buf, format='JPEG', quality=92)
+    img.save(buf, format='JPEG', quality=95)
     return buf.getvalue()
 
 

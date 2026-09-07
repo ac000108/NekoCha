@@ -1,9 +1,9 @@
 {
   "version": "1.0.39",
-  "build_time": "2026-09-08 02:10:17",
-  "updated_at": 1788804617,
+  "build_time": "2026-09-08 02:18:09",
+  "updated_at": 1788805089,
   "file_count": 1054,
-  "total_size": 177467242,
+  "total_size": 177462122,
   "cdn_base": "https://gh-proxy.com/https://raw.githubusercontent.com/ac000108/NekoCha/main",
   "files": {
     "81d243bd2c585b0f4821__mypyc.pyd": "7e8e6f943b1dc7a132fbedb205f75a647c52817197c16c02f81cb358c5af5722",
@@ -83,7 +83,7 @@
     "Launcher/libcrypto-3-x64.dll": "de0e82160049ebdbaf32c23f49ee21bca44917d294c5ca50a231327cb6ef0002",
     "Launcher/libffi-8.dll": "dd57e6016559cbdb0c59579c311bf3fc28700a8023695478c350c10943cbeac2",
     "Launcher/libssl-3-x64.dll": "b65bb38dbc314973712c9692a2b9c3c8ae6b0c1889641e83b8a835f6ab3e24ac",
-    "Launcher/NekoCha-Launcher.exe": "1bc8cf0e6ecad804b92a641052c61ecc3133c0ad39d6a54136ef95cbe5d5c955",
+    "Launcher/NekoCha-Launcher.exe": "7989fa8d2b2691206d452336610861c2102e1a581add6c9989bcb4297e034cb0",
     "Launcher/pyexpat.pyd": "c5a29c1eba79c46bdbe5b75cd549217d56c1ca09dafe576282be9996d80a7f5f",
     "Launcher/python312.dll": "337c5e262a4f4f27565b1d1a3002a9d28aca52bec038ba2494999fe6cbce3426",
     "Launcher/pythoncom312.dll": "fe0597912ceb85c650e5a86d9eab290f7b8846c8068fcfe8c079e2a1e661f9b6",

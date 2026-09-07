@@ -150,6 +150,7 @@ def draw_dynamic_card(msg: dict) -> bytes:
             cur_x += w
         return y
 
+
     # ---- 提取消息内容 ----
     name = msg.get('作者', 'Unknown')
     face = msg.get('作者头像', '')

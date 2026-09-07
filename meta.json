@@ -1,7 +1,7 @@
 {
   "version": "1.0.39",
-  "build_time": "2026-09-08 02:18:09",
-  "updated_at": 1788805089,
+  "build_time": "2026-09-08 02:20:46",
+  "updated_at": 1788805246,
   "file_count": 1054,
   "total_size": 177462122,
   "cdn_base": "https://gh-proxy.com/https://raw.githubusercontent.com/ac000108/NekoCha/main",
@@ -1323,17 +1323,17 @@
     {
       "name": "dynamic_push",
       "display_name": "动态推送",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "description": "监听关注UP主的B站动态，生成卡片图片推送到QQ群。\n\n【配置说明】\n- QQ群号: 推送目标群号\n- 推送图片卡片: 是否发送动态卡片图片\n- @全体成员: 推送时是否@全体成员\n- 发送动态链接: 是否附带B站动态链接",
       "files": [
         {
           "path": "__init__.py",
-          "sha256": "cc194ecf528c7d9618dac6e39b3d2261c943164a3c8051a689fe5d478e0b7220",
-          "size": 15237
+          "sha256": "375d8756d1accb0a34f7fedf9747eefe62ab426112810261e074d533a40dd84c",
+          "size": 15238
         },
         {
           "path": "config.json",
-          "sha256": "ecefd9bffa18542a55d600657441a3cb555809e824bca585aa476706143dbac4",
+          "sha256": "6dd79316763d78ef28ccb05b927256b856eea46673b24588cee36af4d5a81a59",
           "size": 530
         },
         {

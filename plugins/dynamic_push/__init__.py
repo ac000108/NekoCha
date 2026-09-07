@@ -307,6 +307,14 @@ def draw_dynamic_card(msg: dict) -> bytes:
         img.paste(cover_img, (cx, y), draw_mask)
         y += card_h + s(16)
 
+    # 整体圆角裁剪
+    radius = s(20)
+    rounded = Image.new('RGBA', (W, total_h), (0, 0, 0, 0))
+    round_mask = Image.new('L', (W, total_h), 0)
+    ImageDraw.Draw(round_mask).rounded_rectangle([0, 0, W, total_h], radius=radius, fill=255)
+    rounded.paste(img.convert('RGBA'), (0, 0), round_mask)
+    img = rounded.convert('RGB')
+
     buf = io.BytesIO()
     img.save(buf, format='JPEG', quality=95)
     return buf.getvalue()

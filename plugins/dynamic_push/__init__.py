@@ -240,7 +240,13 @@ def draw_dynamic_card(msg: dict) -> bytes:
 
     total_h = MARGIN + header_h + (text_h + 16 if text_lines else 0) + (card_h + 16 if card_h else 0) + MARGIN
 
-    img = Image.new('RGB', (W, total_h), '#FFFFFF')
+    radius = s(20)
+    # 圆角 mask
+    round_mask = Image.new('L', (W, total_h), 0)
+    ImageDraw.Draw(round_mask).rounded_rectangle([(0, 0), (W - 1, total_h - 1)], radius=radius, fill=255)
+    # 白底 + mask → 直接在上面绘制，全程圆角内
+    img = Image.new('RGBA', (W, total_h), (255, 255, 255, 255))
+    img.putalpha(round_mask)
     draw = ImageDraw.Draw(img)
     y = MARGIN
 
@@ -307,16 +313,9 @@ def draw_dynamic_card(msg: dict) -> bytes:
         img.paste(cover_img, (cx, y), draw_mask)
         y += card_h + s(16)
 
-    # 整体圆角裁剪
-    radius = s(20)
-    rounded = Image.new('RGBA', (W, total_h), (0, 0, 0, 0))
-    round_mask = Image.new('L', (W, total_h), 0)
-    ImageDraw.Draw(round_mask).rounded_rectangle([0, 0, W, total_h], radius=radius, fill=255)
-    rounded.paste(img.convert('RGBA'), (0, 0), round_mask)
-    img = rounded.convert('RGB')
-
+    # --- 返回 JPEG（高画质：q95 + 4:4:4 不做色度子采样 + optimize） ---
     buf = io.BytesIO()
-    img.save(buf, format='JPEG', quality=95)
+    img.convert('RGB').save(buf, format='JPEG', quality=95, subsampling=0, optimize=True)
     return buf.getvalue()
 
 

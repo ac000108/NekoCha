@@ -135,6 +135,20 @@ def draw_dynamic_card(msg: dict) -> bytes:
                     cur_x += w
         return cur_y + line_height
 
+    def draw_line_fallback(draw_obj, img_obj, text, fnt, fb_fnt, color, x, y, max_width, line_height):
+        """逐字符绘制单行文字，主字体缺字时自动回退到 fallback 字体"""
+        cur_x = x
+        for ch in text:
+            use_font = fnt if char_in_font(fnt, ch) else fb_fnt
+            bbox = draw_obj.textbbox((0, 0), ch, font=use_font)
+            w = bbox[2] - bbox[0]
+            if cur_x + w > x + max_width and cur_x > x:
+                cur_x = x
+                y += line_height
+            draw_obj.text((cur_x, y), ch, fill=color, font=use_font)
+            cur_x += w
+        return y
+
     # ---- 提取消息内容 ----
     name = msg.get('作者', 'Unknown')
     face = msg.get('作者头像', '')
@@ -178,7 +192,9 @@ def draw_dynamic_card(msg: dict) -> bytes:
     def s(v): return int(v * SCALE)
 
     name_font = font(s(24))
+    name_fb_font = fallback_font(s(24))
     meta_font = font(s(18))
+    meta_fb_font = fallback_font(s(18))
     body_font = font(s(24))
     mini_font = font(s(16))
 
@@ -233,9 +249,10 @@ def draw_dynamic_card(msg: dict) -> bytes:
         img.paste(avatar_round, (MARGIN, y), avatar_round)
 
     name_x = MARGIN + avatar_size + s(12)
-    draw.text((name_x, y + s(4)), name, fill='#18191C', font=name_font)
+    name_max_w = W - MARGIN - name_x
+    draw_line_fallback(draw, img, name, name_font, name_fb_font, '#18191C', name_x, y + s(4), name_max_w, s(30))
     meta = f'{pub_time_display} · {action_text}'
-    draw.text((name_x, y + s(34)), meta, fill='#9499A0', font=meta_font)
+    draw_line_fallback(draw, img, meta, meta_font, meta_fb_font, '#9499A0', name_x, y + s(34), name_max_w, s(24))
     y += header_h
 
     if text_content:
@@ -260,23 +277,25 @@ def draw_dynamic_card(msg: dict) -> bytes:
         text_x = card_bg_x + card_cover_w + s(14)
         text_area_w = card_bg_w - card_cover_w - s(14) - s(10)
         title_font_card = font(s(24))
+        title_fb_font_card = fallback_font(s(24))
         desc_font_card = font(s(16))
-        title_lines = wrap_text(temp_draw, video_title, title_font_card, text_area_w)[:2]
+        desc_fb_font_card = fallback_font(s(16))
+        # 总计 4 行：标题 1-2 行，简介补够剩余
+        title_all = wrap_text(temp_draw, video_title, title_font_card, text_area_w)
+        title_line_count = 1 if len(title_all) <= 1 else 2
+        title_lines = title_all[:title_line_count]
         desc_lines_raw = wrap_text(temp_draw, video_desc, desc_font_card, text_area_w)
-        desc_lines = desc_lines_raw[:2]
-        if len(desc_lines_raw) > 2:
-            last = desc_lines[-1]
-            if last:
-                desc_lines[-1] = last[:-1] + '…'
+        desc_line_count = 4 - title_line_count
+        desc_lines = desc_lines_raw[:desc_line_count]
+        if len(desc_lines_raw) > desc_line_count and desc_lines:
+            desc_lines[-1] = desc_lines[-1][:-1] + '…'
         cy = y + s(4)
         for line in title_lines:
-            draw.text((text_x, cy), line, fill='#00B5E2', font=title_font_card)
-            cy += s(32)
+            cy = draw_line_fallback(draw, img, line, title_font_card, title_fb_font_card, '#00B5E2', text_x, cy, text_area_w, s(32))
         if desc_lines:
             cy += s(6)
         for line in desc_lines:
-            draw.text((text_x, cy), line, fill='#61666D', font=desc_font_card)
-            cy += s(22)
+            cy = draw_line_fallback(draw, img, line, desc_font_card, desc_fb_font_card, '#61666D', text_x, cy, text_area_w, s(22))
         y += card_h + s(16)
     elif cover_img:
         cx = MARGIN + (content_width - cw) // 2
@@ -316,15 +335,15 @@ class DynamicPushPlugin(BasePlugin):
         except Exception as e:
             return {'success': False, 'message': str(e)}
 
-    def _send_group_text(self, group_id, message: str) -> dict:
-        segments = [{'type': 'text', 'data': {'text': message}}]
+    def _send_segments(self, group_id, segments: list) -> dict:
+        """发送消息片段列表（可混合 @全体、文字、图片、链接）"""
         return self._napcat_post(group_id, '/send_group_msg', {'message': segments})
 
-    def _send_group_image(self, group_id, image_bytes: bytes) -> dict:
-        import base64
-        b64 = base64.b64encode(image_bytes).decode('utf-8')
-        segments = [{'type': 'image', 'data': {'file': f'base64://{b64}'}}]
-        return self._napcat_post(group_id, '/send_group_msg', {'message': segments})
+    def _build_dynamic_url(self, message: dict) -> str:
+        dyn_id = message.get('动态ID', '')
+        if dyn_id:
+            return f'https://t.bilibili.com/{dyn_id}'
+        return ''
 
     def process_message(self, message: dict):
         if message.get('消息类型') != '动态':
@@ -338,24 +357,23 @@ class DynamicPushPlugin(BasePlugin):
         except (ValueError, TypeError):
             return
 
-        name = message.get('作者', '')
-        dyn_type = message.get('动态类型', '')
-
-        # 文字摘要
-        if self._config.get('推送文字摘要', False):
-            text = message.get('配文', '')
-            if dyn_type == 'DYNAMIC_TYPE_AV':
-                text = f'{name} 投稿了视频: {message.get("视频标题", "")}'
-            elif text:
-                text = f'{name} 发布了动态: {text}'
-            if text:
-                self._send_group_text(group_id, text)
+        at_all = self._config.get('@全体成员', False)
+        send_link = self._config.get('发送动态链接', True)
+        dyn_url = self._build_dynamic_url(message) if send_link else ''
 
         # 图片卡片
         if self._config.get('推送图片卡片', True):
             try:
                 card_bytes = draw_dynamic_card(message)
                 if card_bytes:
-                    self._send_group_image(group_id, card_bytes)
+                    import base64
+                    b64 = base64.b64encode(card_bytes).decode('utf-8')
+                    segments = []
+                    if at_all:
+                        segments.append({'type': 'at', 'data': {'qq': 'all'}})
+                    segments.append({'type': 'image', 'data': {'file': f'base64://{b64}'}})
+                    if dyn_url:
+                        segments.append({'type': 'text', 'data': {'text': f'\n{dyn_url}'}})
+                    self._send_segments(group_id, segments)
             except Exception as e:
                 print(f"[{self.name}] 生成卡片失败: {e}")

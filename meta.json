@@ -1,7 +1,7 @@
 {
   "version": "1.0.36",
-  "build_time": "2026-09-08 01:10:12",
-  "updated_at": 1788801012,
+  "build_time": "2026-09-08 01:35:44",
+  "updated_at": 1788802544,
   "file_count": 1054,
   "total_size": 177467242,
   "cdn_base": "https://gh-proxy.com/https://raw.githubusercontent.com/ac000108/NekoCha/main",
@@ -10,7 +10,7 @@
     "libcrypto-3-x64.dll": "de0e82160049ebdbaf32c23f49ee21bca44917d294c5ca50a231327cb6ef0002",
     "libffi-8.dll": "dd57e6016559cbdb0c59579c311bf3fc28700a8023695478c350c10943cbeac2",
     "libssl-3-x64.dll": "b65bb38dbc314973712c9692a2b9c3c8ae6b0c1889641e83b8a835f6ab3e24ac",
-    "NekoCha.exe": "d3b22eba38c8faff9612fc9a924421cbba3fb1d535be6b5ed7badd4171e749af",
+    "NekoCha.exe": "9e5daf0f941efc079b42b0ed2170df38d799484fd6673878d86c4462b9c98986",
     "pyexpat.pyd": "c5a29c1eba79c46bdbe5b75cd549217d56c1ca09dafe576282be9996d80a7f5f",
     "python3.dll": "24fb5d7af90498a90abd742d8b01e4b8efcbf0797715863525d53ed84cd157ea",
     "python312.dll": "337c5e262a4f4f27565b1d1a3002a9d28aca52bec038ba2494999fe6cbce3426",
@@ -83,7 +83,7 @@
     "Launcher/libcrypto-3-x64.dll": "de0e82160049ebdbaf32c23f49ee21bca44917d294c5ca50a231327cb6ef0002",
     "Launcher/libffi-8.dll": "dd57e6016559cbdb0c59579c311bf3fc28700a8023695478c350c10943cbeac2",
     "Launcher/libssl-3-x64.dll": "b65bb38dbc314973712c9692a2b9c3c8ae6b0c1889641e83b8a835f6ab3e24ac",
-    "Launcher/NekoCha-Launcher.exe": "2e2fa14f96257f6f44a09415186c921b980bac5e23ebfaaac7406b49a1c63576",
+    "Launcher/NekoCha-Launcher.exe": "1bc8cf0e6ecad804b92a641052c61ecc3133c0ad39d6a54136ef95cbe5d5c955",
     "Launcher/pyexpat.pyd": "c5a29c1eba79c46bdbe5b75cd549217d56c1ca09dafe576282be9996d80a7f5f",
     "Launcher/python312.dll": "337c5e262a4f4f27565b1d1a3002a9d28aca52bec038ba2494999fe6cbce3426",
     "Launcher/pythoncom312.dll": "fe0597912ceb85c650e5a86d9eab290f7b8846c8068fcfe8c079e2a1e661f9b6",
@@ -1323,18 +1323,18 @@
     {
       "name": "dynamic_push",
       "display_name": "动态推送",
-      "version": "1.0.2",
-      "description": "监听关注UP主的B站动态，生成卡片图片推送到QQ群",
+      "version": "1.0.4",
+      "description": "监听关注UP主的B站动态，生成卡片图片推送到QQ群。\n\n【配置说明】\n- QQ群号: 推送目标群号\n- 推送图片卡片: 是否发送动态卡片图片\n- @全体成员: 推送时是否@全体成员\n- 发送动态链接: 是否附带B站动态链接",
       "files": [
         {
           "path": "__init__.py",
-          "sha256": "023b7818b9c9c2b7174986984bcd0cad79ae58b856328a2c39b4fc3b0a63ee95",
-          "size": 13754
+          "sha256": "13fca2ff5a2b459e322753bc51dff1daec2eef9e51477c2b73e69f1f64c24dd2",
+          "size": 14994
         },
         {
           "path": "config.json",
-          "sha256": "13b8fc2139e26c17d32ecf64ff19d4ea938d8805b75550003230fcb0fe00fa5c",
-          "size": 292
+          "sha256": "8d05c765cfaf37b87c84ff2d96c154b77488c24e1ae10bf75ff08cd50d76ebba",
+          "size": 530
         },
         {
           "path": "fonts/Yozai-Regular.ttf",

@@ -1,7 +1,7 @@
 {
-  "version": "1.0.38",
-  "build_time": "2026-09-08 01:53:09",
-  "updated_at": 1788803589,
+  "version": "1.0.39",
+  "build_time": "2026-09-08 02:10:17",
+  "updated_at": 1788804617,
   "file_count": 1054,
   "total_size": 177467242,
   "cdn_base": "https://gh-proxy.com/https://raw.githubusercontent.com/ac000108/NekoCha/main",
@@ -10,7 +10,7 @@
     "libcrypto-3-x64.dll": "de0e82160049ebdbaf32c23f49ee21bca44917d294c5ca50a231327cb6ef0002",
     "libffi-8.dll": "dd57e6016559cbdb0c59579c311bf3fc28700a8023695478c350c10943cbeac2",
     "libssl-3-x64.dll": "b65bb38dbc314973712c9692a2b9c3c8ae6b0c1889641e83b8a835f6ab3e24ac",
-    "NekoCha.exe": "675cc3f45a30421e8da19fdee00caca34331ff3014d552bffaa7d6939bc9162d",
+    "NekoCha.exe": "71b4bef1be164818e2136ad6d81abe4f9b51429fde9da7a334d83f5b4968d3a8",
     "pyexpat.pyd": "c5a29c1eba79c46bdbe5b75cd549217d56c1ca09dafe576282be9996d80a7f5f",
     "python3.dll": "24fb5d7af90498a90abd742d8b01e4b8efcbf0797715863525d53ed84cd157ea",
     "python312.dll": "337c5e262a4f4f27565b1d1a3002a9d28aca52bec038ba2494999fe6cbce3426",
@@ -1323,17 +1323,17 @@
     {
       "name": "dynamic_push",
       "display_name": "动态推送",
-      "version": "1.0.4",
+      "version": "1.0.5",
       "description": "监听关注UP主的B站动态，生成卡片图片推送到QQ群。\n\n【配置说明】\n- QQ群号: 推送目标群号\n- 推送图片卡片: 是否发送动态卡片图片\n- @全体成员: 推送时是否@全体成员\n- 发送动态链接: 是否附带B站动态链接",
       "files": [
         {
           "path": "__init__.py",
-          "sha256": "13fca2ff5a2b459e322753bc51dff1daec2eef9e51477c2b73e69f1f64c24dd2",
-          "size": 14994
+          "sha256": "cc194ecf528c7d9618dac6e39b3d2261c943164a3c8051a689fe5d478e0b7220",
+          "size": 15237
         },
         {
           "path": "config.json",
-          "sha256": "8d05c765cfaf37b87c84ff2d96c154b77488c24e1ae10bf75ff08cd50d76ebba",
+          "sha256": "ecefd9bffa18542a55d600657441a3cb555809e824bca585aa476706143dbac4",
           "size": 530
         },
         {

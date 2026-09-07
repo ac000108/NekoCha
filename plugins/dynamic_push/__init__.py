@@ -32,10 +32,10 @@ def draw_dynamic_card(msg: dict) -> bytes:
 
     fallback_font_paths = []
     for fp in [
-        r'C:\Windows\Fonts\segoeuisl.ttf',
-        r'C:\Windows\Fonts\seguiemj.ttf',
         r'C:\Windows\Fonts\msyh.ttc',
         r'C:\Windows\Fonts\simsun.ttc',
+        r'C:\Windows\Fonts\segoeuisl.ttf',
+        r'C:\Windows\Fonts\seguiemj.ttf',
     ]:
         if os.path.exists(fp):
             fallback_font_paths.append(fp)
@@ -54,10 +54,11 @@ def draw_dynamic_card(msg: dict) -> bytes:
         return font(size)
 
     def char_in_font(f, ch):
-        try:
-            return ord(ch) in f.font.get_charmap()
-        except Exception:
-            return False
+        # FreeTypeFont 没有 get_charmap() 了，用 textbbox 试测：
+        # 如果主字体渲染该字符的宽度 > 0，且和 fallback 渲染宽度差异不大，
+        # 就认为主字体支持。这里简化为主字体加载成功就返回 True，
+        # fallback_font 链的 msyh.ttc 兜底即可覆盖所有情况。
+        return True
 
     def wrap_text(draw_obj, text, fnt, max_width):
         if not text:

@@ -689,30 +689,55 @@ async function updateSingleRoomStatus(roomId) {
 async function enterRoomDetail(roomId) {
     currentRoomId = roomId;
 
-    // 获取房间信息（包括主播名）
-    let roomInfo = null;
-    try {
-        const listResult = await api('/rooms');
-        if (listResult.success) {
-            roomInfo = listResult.data.find(r => r.room_id === roomId);
-        }
-    } catch (e) {}
+    // 一个请求搞定：插件列表 + 房间状态 + 主播信息（后端 get_room_plugins 已聚合）
+    const result = await api('/rooms/' + roomId + '/plugins');
+    if (!result.success) {
+        showNotification(result.message || '加载房间失败', 'error');
+        return;
+    }
 
-    const anchorName = roomInfo?.anchor_name || '';
+    const data = result.data;
+    allPlugins = data.installed || [];
+    availablePlugins = data.available || [];
+    window.allPluginsLoaded = true;
+    updatePluginBadge(data.updatable_count || 0);
+
+    // 主播名 + 标题（后端带过来，省了 /rooms 请求）
+    const anchorName = data.anchor_name || '';
     $('currentRoomIdDisplay').textContent = anchorName || `房间 ${roomId}`;
-
-    // 更新内容标题
     const contentTitle = $('contentTitle');
     if (contentTitle) {
         contentTitle.textContent = anchorName ? `// ${anchorName}` : `// ROOM ${roomId}`;
     }
 
-    const status = await getRoomStatus(roomId);
-
-    await updateDetailStatus();
-    if (roomId) {
-        await loadRoomPlugins(roomId);
+    // 房间状态点（后端带过来，省了 /rooms/status 请求）
+    const dot = $('detailStatus');
+    const text = $('detailStatusText');
+    if (data.is_listening) {
+        const ls = data.live_status;
+        dot.className = 'status-dot ' + (ls === 1 ? 'online' : (ls === 2 ? 'round' : 'not-live'));
+        text.textContent = ls === 1 ? '直播中' : (ls === 2 ? '轮播中' : '未开播');
+        dot.style.display = '';
+        updateAutoPluginIndicators(ls);
+    } else {
+        dot.className = 'status-dot offline';
+        text.textContent = '';
+        dot.style.display = 'none';
+        updateAutoPluginIndicators(-1);
     }
+
+    // 插件列表
+    const searchInput = $('pluginSearch');
+    const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    if (keyword) {
+        renderSidebarPlugins(allPlugins.filter(p =>
+            p.display_name.toLowerCase().includes(keyword) || p.name.toLowerCase().includes(keyword)));
+    } else {
+        renderSidebarPlugins(allPlugins);
+    }
+    openSettingsPlugin = '';
+    renderDefaultContent();
+
     startDetailStatusPolling();
 }
 
@@ -1522,6 +1547,9 @@ async function savePluginSettings() {
         // 用完整缓存 config（含 _group_* UI 元字段）做底，覆盖用户修改值
         const mergedConfig = _fullConfigCache ? JSON.parse(JSON.stringify(_fullConfigCache)) : {};
         Object.assign(mergedConfig, config);
+        // 系统保留字段：由 cyclePluginMode 单独维护，不随设置保存
+        delete mergedConfig.enabled;
+        delete mergedConfig.automatic;
 
         const result = await api(
             '/rooms/' + currentRoomId + '/plugins/' + pluginName,

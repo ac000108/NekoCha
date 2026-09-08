@@ -183,8 +183,6 @@ def draw_dynamic_card(msg: dict) -> bytes:
     cover_url = msg.get('视频封面', '') if is_video else ''
     duration_text = msg.get('视频时长', '')
     pics = msg.get('图片列表', []) if not is_video else []
-    if not cover_url and pics:
-        cover_url = pics[0]
 
     # ---- 布局参数 ----
     SCALE = 2.0
@@ -213,32 +211,83 @@ def draw_dynamic_card(msg: dict) -> bytes:
     text_lines = wrap_text(temp_draw, text_content, body_font, content_width)
     text_h = len(text_lines) * s(36)
 
-    card_h = 0
-    cover_img = _download_image(cover_url) if cover_url else None
+    card_h = 0  # 最终卡片图片区域的总高度（计算用）
+    card_type = 'none'   # 'video' | 'multi' | 'single' | 'none'
+    card_data = {}       # 存下载好的图片 + 尺寸等
 
-    if is_video and cover_img:
-        card_cover_w = s(220)
-        ratio = card_cover_w / cover_img.width
-        card_cover_h = int(cover_img.height * ratio)
-        cover_img = cover_img.resize((card_cover_w, card_cover_h), Image.LANCZOS)
-        card_h = card_cover_h
-    elif cover_img:
-        max_w = int(content_width * 0.6)
-        if cover_img.width > max_w:
-            ratio = max_w / cover_img.width
-            cw = max_w
-            card_cover_h = int(cover_img.height * ratio)
+    if is_video and cover_url:
+        # 视频动态：封面 + 标题 + 简介 小卡片
+        video_cover = _download_image(cover_url)
+        if video_cover:
+            card_type = 'video'
+            card_cover_w = s(220)
+            ratio = card_cover_w / video_cover.width
+            card_cover_h = int(video_cover.height * ratio)
+            video_cover = video_cover.resize((card_cover_w, card_cover_h), Image.LANCZOS)
+            card_data = {'cover_img': video_cover, 'cover_w': card_cover_w, 'cover_h': card_cover_h}
+            card_h = card_cover_h
+    elif pics:
+        # 图文动态（可能多张）：九宫格布局，全部裁成正方形
+        COLS = 3
+        GAP = s(4)        # 格子间距
+        BORDER_R = s(8)
+        cell_side = (content_width - GAP * (COLS - 1)) // COLS  # 正方形边长
+
+        # 下载所有图片
+        all_imgs = []
+        for url in pics:
+            img = _download_image(url)
+            if img:
+                all_imgs.append(img)
+        if not all_imgs:
+            pass  # 没图就跳过
+        elif len(all_imgs) == 1:
+            # 单张：居中显示，不超过最大宽高
+            card_type = 'single'
+            ci = all_imgs[0]
+            max_single_w = content_width
+            max_single_h = s(400)
+            ratio = min(max_single_w / ci.width, max_single_h / ci.height, 1.0)
+            cw = int(ci.width * ratio)
+            ch = int(ci.height * ratio)
+            ci = ci.resize((cw, ch), Image.LANCZOS)
+            card_data = {'imgs': [ci], 'rows': 1, 'cols': 1, 'cell_w': cw, 'cell_h': ch, 'gap': GAP, 'radius': BORDER_R}
+            card_h = ch
         else:
-            cw = cover_img.width
-            card_cover_h = cover_img.height
-        if card_cover_h > s(500):
-            ratio = s(500) / card_cover_h
-            cw = int(cw * ratio)
-            card_cover_h = s(500)
-        cover_img = cover_img.resize((cw, card_cover_h), Image.LANCZOS)
-        card_h = card_cover_h
+            # 多张：3列九宫格，全部 cover 裁成正方形
+            card_type = 'multi'
+            imgs = all_imgs[:COLS * COLS]  # 最多显示 9 张
+            rows = (len(imgs) + COLS - 1) // COLS
+            norm_imgs = []
+            for ci in imgs:
+                src_ratio = ci.width / ci.height
+                if src_ratio >= 1:
+                    # 更宽或正方形 → 按高度缩放，裁左右
+                    new_h = cell_side
+                    new_w = int(new_h * src_ratio)
+                    ci_r = ci.resize((new_w, new_h), Image.LANCZOS)
+                    left = (new_w - cell_side) // 2
+                    ci_r = ci_r.crop((left, 0, left + cell_side, new_h))
+                else:
+                    # 更高 → 按宽度缩放，裁上下
+                    new_w = cell_side
+                    new_h = int(new_w / src_ratio)
+                    ci_r = ci.resize((new_w, new_h), Image.LANCZOS)
+                    top = (new_h - cell_side) // 2
+                    ci_r = ci_r.crop((0, top, new_w, top + cell_side))
+                norm_imgs.append(ci_r)
+            grid_h = rows * cell_side + (rows - 1) * GAP
+            card_data = {
+                'imgs': norm_imgs, 'rows': rows, 'cols': COLS,
+                'cell_w': cell_side, 'cell_h': cell_side,
+                'gap': GAP, 'radius': BORDER_R,
+            }
+            card_h = grid_h
 
     total_h = MARGIN + header_h + (text_h + 16 if text_lines else 0) + (card_h + 16 if card_h else 0) + MARGIN
+    # 纯文字无图动态：最小高度 500px，与视频卡片对齐
+    if card_type == 'none':
+        total_h = max(total_h, s(250))
 
     radius = s(20)
     # 先在白底 RGB 上绘制所有内容（paste RGB 图不会破坏 alpha）
@@ -264,28 +313,29 @@ def draw_dynamic_card(msg: dict) -> bytes:
         y = draw_text_with_emoji(draw, img, text_content, body_font, merged_emoji_map, MARGIN, y, content_width, s(36))
         y += s(10)
 
-    if is_video and cover_img:
+    if card_type == 'video':
+        # 视频动态：左侧封面 + 右侧标题简介
+        d = card_data
         card_bg_x = MARGIN
         card_bg_w = content_width
         draw.rounded_rectangle([card_bg_x, y, card_bg_x + card_bg_w, y + card_h], radius=s(8), fill='#F1F2F3')
-        cover_mask = Image.new('L', (card_cover_w, card_cover_h), 0)
-        ImageDraw.Draw(cover_mask).rounded_rectangle([0, 0, card_cover_w, card_cover_h], radius=s(6), fill=255)
-        img.paste(cover_img, (card_bg_x, y), cover_mask)
+        cover_mask = Image.new('L', (d['cover_w'], d['cover_h']), 0)
+        ImageDraw.Draw(cover_mask).rounded_rectangle([0, 0, d['cover_w'], d['cover_h']], radius=s(6), fill=255)
+        img.paste(d['cover_img'], (card_bg_x, y), cover_mask)
         if duration_text:
             tb = mini_font.getbbox(duration_text)
             tw = tb[2] - tb[0]
             th = tb[3] - tb[1]
-            dur_x = card_bg_x + card_cover_w - tw - s(8)
-            dur_y = y + card_cover_h - th - s(6)
+            dur_x = card_bg_x + d['cover_w'] - tw - s(8)
+            dur_y = y + d['cover_h'] - th - s(6)
             draw.text((dur_x + 1, dur_y + 1), duration_text, fill='#00000080', font=mini_font)
             draw.text((dur_x, dur_y), duration_text, fill='#FFFFFF', font=mini_font)
-        text_x = card_bg_x + card_cover_w + s(14)
-        text_area_w = card_bg_w - card_cover_w - s(14) - s(10)
+        text_x = card_bg_x + d['cover_w'] + s(14)
+        text_area_w = card_bg_w - d['cover_w'] - s(14) - s(10)
         title_font_card = font(s(24))
         title_fb_font_card = fallback_font(s(24))
         desc_font_card = font(s(16))
         desc_fb_font_card = fallback_font(s(16))
-        # 总计 4 行：标题 1-2 行，简介补够剩余
         title_all = wrap_text(temp_draw, video_title, title_font_card, text_area_w)
         title_line_count = 1 if len(title_all) <= 1 else 2
         title_lines = title_all[:title_line_count]
@@ -302,12 +352,32 @@ def draw_dynamic_card(msg: dict) -> bytes:
         for line in desc_lines:
             cy = draw_line_fallback(draw, img, line, desc_font_card, desc_fb_font_card, '#61666D', text_x, cy, text_area_w, s(22))
         y += card_h + s(16)
-    elif cover_img:
-        cx = MARGIN + (content_width - cw) // 2
-        draw_mask = Image.new('L', (cw, card_cover_h), 0)
-        ImageDraw.Draw(draw_mask).rounded_rectangle([0, 0, cw, card_cover_h], radius=s(8), fill=255)
-        img.paste(cover_img, (cx, y), draw_mask)
-        y += card_h + s(16)
+
+    elif card_type in ('single', 'multi'):
+        # 图文动态：单图居中 or 多图网格
+        d = card_data
+        radius = d['radius']
+        gap = d['gap']
+        cell_w = d['cell_w']
+        cell_h = d['cell_h']
+        n = len(d['imgs'])
+        for idx, ci in enumerate(d['imgs']):
+            row = idx // d['cols']
+            col = idx % d['cols']
+            if d['cols'] == 1:
+                # 单图：居中
+                cx = MARGIN + (content_width - ci.width) // 2
+                cy = y
+            else:
+                cx = MARGIN + col * (cell_w + gap)
+                cy = y + row * (cell_h + gap)
+            mask = Image.new('L', (ci.width, ci.height), 0)
+            ImageDraw.Draw(mask).rounded_rectangle([0, 0, ci.width, ci.height], radius=radius, fill=255)
+            img.paste(ci, (cx, cy), mask)
+        if n > 1:
+            y += card_h + s(16)
+        else:
+            y += ci.height + s(16)
 
     # --- 圆角裁剪 + 高质量 JPEG ---
     # 用圆角 mask 把白底内容 paste 到透明 RGBA（只有 mask 区域可见）

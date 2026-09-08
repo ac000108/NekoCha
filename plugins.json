@@ -1,5 +1,5 @@
 {
-  "updated_at": 1788835647,
+  "updated_at": 1788836511,
   "plugins": [
     {
       "name": "blind_box_stats",
@@ -285,7 +285,7 @@
     {
       "name": "gift_show",
       "display_name": "礼物展示",
-      "version": "1.1.5",
+      "version": "1.1.6",
       "description": "每秒查询数据库，滚动展示最新礼物记录",
       "files": [
         {
@@ -295,13 +295,13 @@
         },
         {
           "path": "config.json",
-          "sha256": "9ecdc46775f396ccb531a043ec1c0a43f6c4cdcb6acdb75761afabbf3384a811",
+          "sha256": "abb86b0ffc5399e96d36e931bf5e54ce1b3f17f19654d3d7892b4a55c0965d07",
           "size": 378
         },
         {
           "path": "display.html",
-          "sha256": "bf12e216daf807b11f9a7235adc2b6190d0fb7f42e5c4f8091772212fa24c641",
-          "size": 18226
+          "sha256": "0d62955b4f9986c0d8fe862572cfe77acc997fc2663536aa144dc35aca0b4cc8",
+          "size": 19093
         }
       ]
     }

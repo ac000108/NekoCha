@@ -10,19 +10,21 @@
         html, body { height: 100%; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: #f8fafc;
-            color: #1e293b;
+            background: #eef2f7;
             overflow: hidden;
         }
 
-        /* 滚动容器 —— 紧密排列，无间隙 */
         .scroll {
             height: 100vh;
             overflow-y: auto;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
         }
-        .scroll::-webkit-scrollbar { width: 6px; }
-        .scroll::-webkit-scrollbar-track { background: transparent; }
-        .scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+        .scroll::-webkit-scrollbar { width: 5px; }
+        .scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
 
         .empty {
             text-align: center;
@@ -31,65 +33,72 @@
             font-size: 14px;
         }
 
-        /* ============ 礼物条 ============ */
+        /* ============ 礼物卡片 ============ */
         .gift {
+            width: 500px;
+            max-width: 95vw;
+            height: 76px;
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 14px 20px;
-            background: linear-gradient(90deg, #dbeafe 0%, #eff6ff 50%, #ffffff 100%);
-            animation: enter 0.35s ease-out;
-            border-bottom: 1px solid rgba(59, 130, 246, 0.06);
+            padding: 10px 14px 10px 10px;
+            background: linear-gradient(90deg, #93c5fd 0%, #bfdbfe 35%, #dbeafe 60%, #f0f9ff 85%, #ffffff 100%);
+            position: relative;
+            /* 左侧大圆角，右侧平(三角tail会盖) */
+            border-radius: 24px 0 0 24px;
+            /* clip-path 切出右侧交叉三角缺口 */
+            clip-path: url(#giftClip);
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @keyframes enter {
-            from { opacity: 0; transform: translateY(-8px); }
-            to   { opacity: 1; transform: translateY(0); }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-16px); }
+            to   { opacity: 1; transform: translateX(0); }
         }
 
-        @keyframes mergePulse {
-            0%   { background: linear-gradient(90deg, #c7d2fe 0%, #e0e7ff 50%, #f8fafc 100%); }
-            100% { background: linear-gradient(90deg, #dbeafe 0%, #eff6ff 50%, #ffffff 100%); }
+        @keyframes mergeFlash {
+            0%   { filter: brightness(1.08); }
+            100% { filter: brightness(1); }
         }
-        .gift.merged { animation: mergePulse 0.5s ease-out; }
+        .gift.merged { animation: mergeFlash 0.45s ease-out; }
 
         /* 头像 */
-        .gift-avatar {
-            width: 48px;
-            height: 48px;
+        .g-av {
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             object-fit: cover;
             flex-shrink: 0;
+            border: 2px solid rgba(255,255,255,0.95);
+            box-shadow: 0 2px 5px rgba(30, 64, 175, 0.18);
             background: #e2e8f0;
         }
 
-        /* 中间信息 */
-        .gift-info {
+        /* 中间文字 */
+        .g-mid {
             flex: 1;
             min-width: 0;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
 
-        .gift-user-row {
+        .g-userline {
             display: flex;
             align-items: center;
             gap: 8px;
-            flex-wrap: wrap;
         }
 
-        .gift-name {
+        .g-name {
             font-size: 15px;
-            font-weight: 600;
-            color: #1e40af;
-            max-width: 220px;
+            font-weight: 700;
+            color: #0f172a;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            max-width: 200px;
         }
 
-        /* 粉丝牌/舰长等级 tag */
         .medal {
             display: inline-flex;
             align-items: center;
@@ -97,93 +106,113 @@
             border-radius: 4px;
             font-size: 11px;
             font-weight: 600;
-            background: #e2e8f0;
-            color: #64748b;
-        }
-        .medal.总督 { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
-        .medal.提督 { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
-        .medal.舰长 { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
-        .medal.粉丝团 { background: linear-gradient(135deg, #ec4899, #f472b6); color: white; }
-
-        /* 投喂描述 */
-        .gift-action {
-            font-size: 14px;
+            background: rgba(255,255,255,0.75);
             color: #475569;
-        }
-        .gift-action .gift-name-text {
-            color: #0369a1;
-            font-weight: 500;
-        }
-        /* 礼物名旁边的小图标（粉丝团灯牌那个红色方块） */
-        .gift-action .inline-icon {
-            display: inline-block;
-            vertical-align: middle;
-            width: 20px;
-            height: 20px;
-            margin-left: 4px;
-        }
-
-        /* 右侧：礼物图标 + ×N + 时间戳 —— 全部同一行 */
-        .gift-right {
-            display: flex;
-            align-items: center;
-            gap: 4px;
             flex-shrink: 0;
         }
+        .medal.总督 { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+        .medal.提督 { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff; }
+        .medal.舰长 { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
+        .medal.粉丝团 { background: linear-gradient(135deg, #ec4899, #f472b6); color: #fff; }
 
-        .gift-icon {
-            width: 36px;
-            height: 36px;
+        .g-act {
+            font-size: 14px;
+            color: #334155;
+        }
+        .g-act .gn { color: #1e40af; font-weight: 600; }
+        .g-act .blind { color: #b45309; font-weight: 600; }
+
+        /* 右侧 */
+        .g-right {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-shrink: 0;
+            position: relative;
+            padding-right: 12px;
+        }
+
+        .g-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .g-icon img {
+            max-width: 48px;
+            max-height: 48px;
             object-fit: contain;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.12));
         }
+        .g-icon .emj { font-size: 28px; line-height: 1; }
 
-        .gift-emoji {
-            font-size: 26px;
+        .g-num {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1e3a8a;
             line-height: 1;
+            margin-left: -10px;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.7);
         }
+        .g-num .x { font-size: 15px; font-weight: 600; color: #3b82f6; }
 
-        .gift-num {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1e40af;
-            line-height: 1;
-        }
-        .gift-num .x {
+        .g-time {
+            position: absolute;
+            right: 12px;
+            bottom: 4px;
+            font-size: 11px;
+            color: #475569;
             font-weight: 500;
-            color: #3b82f6;
-            font-size: 16px;
-        }
-        .gift-num .merge-n {
-            font-size: 12px;
-            font-weight: 600;
-            color: #6366f1;
-            margin-left: 2px;
-        }
-
-        .gift-time {
-            font-size: 12px;
-            color: #64748b;
-            margin-left: 4px;
             white-space: nowrap;
         }
 
-        /* 合并角标（只在合并时显示，右上角） */
-        .gift-merge-badge {
+        /* 合并角标 */
+        .g-badge {
             position: absolute;
-            top: 6px;
-            right: 10px;
+            top: 4px;
+            right: 4px;
             padding: 1px 6px;
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: white;
+            color: #fff;
             font-size: 10px;
             font-weight: 700;
             border-radius: 8px;
-            line-height: 1.3;
+            z-index: 2;
         }
-        .gift { position: relative; }
     </style>
 </head>
 <body>
+    <!-- SVG clip-path 定义右侧交叉三角缺口 -->
+    <svg width="0" height="0" style="position:absolute">
+        <defs>
+            <clipPath id="giftClip" clipPathUnits="userSpaceOnUse">
+                <!-- 500宽 x 76高，右侧切出双三角交叉缺口 -->
+                <!-- 从左上(24,0)开始，左侧有圆角所以起点向内收 -->
+                <!-- 顶部向右走到 x=456，然后45°下斜到 y=38(中线)，再反向45°上到 x=476,y=0(小三角) -->
+                <!-- 再从顶部平走到x=500,y=0是外侧顶点 -->
+                <!-- 然后下到x=500,y=76 -->
+                <!-- 再45°斜上到x=476,y=38(中线),再45°斜下到x=456,y=76(第二个三角) -->
+                <!-- 底部平走到x=24,y=76,然后左下圆角-->
+                <path d="
+                    M 24 0
+                    L 458 0
+                    L 480 12
+                    L 460 24
+                    L 500 38
+                    L 460 52
+                    L 480 64
+                    L 458 76
+                    L 24 76
+                    Q 0 76 0 52
+                    L 0 24
+                    Q 0 0 24 0
+                    Z
+                " />
+            </clipPath>
+        </defs>
+    </svg>
+
     <div class="scroll" id="scroll">
         <div class="empty" id="empty">等待礼物中...</div>
     </div>
@@ -194,7 +223,7 @@
         const PLUGIN_NAME = _parts[3] || null;
 
         const POLL = 1000;
-        const MAX = 300;
+        const MAX = 200;
         const INIT = 50;
 
         let CFG = { 合并同用户同礼物: true, 合并窗口秒数: 300, 展示范围: '全部' };
@@ -224,7 +253,7 @@
             return r.json();
         }
 
-        function render(g) {
+        function renderRow(g) {
             const uid = g['用户ID'] || 0;
             const name = esc(g['用户名'] || '-');
             const av = g['头像URL'] || '';
@@ -241,7 +270,6 @@
             const ts = g['时间戳'];
             const mn = g._mergeCount || 1;
 
-            // 粉丝牌
             let medal = '';
             if (mname) {
                 let cls = 'medal';
@@ -252,22 +280,20 @@
                 medal = `<span class="${cls}">${mname}${mlv ? ' Lv' + mlv : ''}</span>`;
             }
 
-            // 礼物图标（用于右侧显示）
             let icon;
             if (gid) {
                 const safe = gname.replace(/[\\/:*?"<>|]/g, '_');
                 const lf = safe + gid + '.png';
                 const pUrl = cdn ? '/api/proxy/avatar?url=' + encodeURIComponent(cdn) : '';
                 const scdn = cdn.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                icon = `<img class="gift-icon" src="/gift_data/images/${encodeURIComponent(lf)}" alt="" onerror="fb(this,'${scdn}',${pUrl ? 1 : 0})">`;
+                icon = `<img src="/gift_data/images/${encodeURIComponent(lf)}" alt="" onerror="fb(this,'${scdn}',${pUrl ? 1 : 0})">`;
             } else {
-                icon = '<span class="gift-emoji">🎁</span>';
+                icon = '<span class="emj">🎁</span>';
             }
 
-            // 投喂描述
-            let action = `投喂了 <span class="gift-name-text">${gname}</span>`;
+            let action = `投喂了 <span class="gn">${gname}</span>`;
             if (blind && blindN) {
-                action += ` 🎲 ${blindN}`;
+                action += ` <span class="blind">🎲 ${blindN}</span>`;
                 if (blindP !== 0) {
                     const cny = blindP / 1000;
                     const sign = cny > 0 ? '+' : '';
@@ -276,24 +302,23 @@
                 }
             }
 
-            // 合并角标（>1次时才显示在右上角）
-            const badge = mn > 1 ? `<div class="gift-merge-badge">${mn}次</div>` : '';
+            const badge = mn > 1 ? `<div class="g-badge">${mn}次</div>` : '';
 
             return `
                 <div class="gift" data-id="${g.id}" data-user="${uid}" data-gift="${gname}" data-blind="${blind ? blindN : ''}" data-ts="${ts}" data-merge="${mn}">
                     ${badge}
-                    ${av ? `<img class="gift-avatar" src="/api/proxy/avatar?url=${encodeURIComponent(av)}" onerror="this.style.display='none'">` : '<div class="gift-avatar" style="display:flex;align-items:center;justify-content:center;background:#e2e8f0;font-size:20px;">👤</div>'}
-                    <div class="gift-info">
-                        <div class="gift-user-row">
-                            <span class="gift-name">${name}</span>
+                    ${av ? `<img class="g-av" src="/api/proxy/avatar?url=${encodeURIComponent(av)}" onerror="this.style.display='none'">` : '<div class="g-av" style="display:flex;align-items:center;justify-content:center;background:#e2e8f0;font-size:18px;">👤</div>'}
+                    <div class="g-mid">
+                        <div class="g-userline">
+                            <span class="g-name">${name}</span>
                             ${medal}
                         </div>
-                        <div class="gift-action">${action}</div>
+                        <div class="g-act">${action}</div>
                     </div>
-                    <div class="gift-right">
-                        ${icon}
-                        <div class="gift-num"><span class="x">×</span>${cnt}${mn > 1 ? `<span class="merge-n">(${mn})</span>` : ''}</div>
-                        <div class="gift-time">${fmtTime(ts)}</div>
+                    <div class="g-right">
+                        <div class="g-icon">${icon}</div>
+                        <div class="g-num"><span class="x">×</span>${cnt}</div>
+                        <div class="g-time">${fmtTime(ts)}</div>
                     </div>
                 </div>
             `;
@@ -312,7 +337,7 @@
                 return;
             }
             const p = img.parentElement;
-            if (p) p.innerHTML = '<span class="gift-emoji">🎁</span>';
+            if (p) p.innerHTML = '<span class="emj">🎁</span>';
         }
 
         function findMerge(gift) {
@@ -336,21 +361,17 @@
         function mergeInto(row, gift) {
             const newCnt = gift['礼物数量'] || 1;
             const mn = parseInt(row.dataset.merge || '1') + 1;
-            const cntEl = row.querySelector('.gift-num');
-            const curCnt = parseInt(cntEl.textContent.replace(/[×()]/g, '').split('(')[0].trim()) || 1;
+            const cntEl = row.querySelector('.g-num');
+            const curCnt = parseInt(cntEl.textContent.replace(/[×]/g, '')) || 1;
             row.dataset.merge = mn;
             row.dataset.ts = gift['时间戳'];
-            cntEl.innerHTML = `<span class="x">×</span>${curCnt + newCnt - 1}${mn > 1 ? `<span class="merge-n">(${mn})</span>` : ''}`;
-            row.querySelector('.gift-time').textContent = fmtTime(gift['时间戳']);
-            // 更新角标
-            let badge = row.querySelector('.gift-merge-badge');
+            cntEl.innerHTML = `<span class="x">×</span>${curCnt + newCnt - 1}`;
+            row.querySelector('.g-time').textContent = fmtTime(gift['时间戳']);
+            let badge = row.querySelector('.g-badge');
             if (mn > 1) {
-                if (!badge) { badge = document.createElement('div'); badge.className = 'gift-merge-badge'; row.appendChild(badge); }
+                if (!badge) { badge = document.createElement('div'); badge.className = 'g-badge'; row.appendChild(badge); }
                 badge.textContent = mn + '次';
-            } else if (badge) {
-                badge.remove();
-            }
-            // 动画
+            } else if (badge) badge.remove();
             row.classList.remove('merged');
             void row.offsetWidth;
             row.classList.add('merged');
@@ -362,7 +383,7 @@
             for (const g of gifts) {
                 const t = findMerge(g);
                 if (t) mergeInto(t, g);
-                else $s.insertAdjacentHTML('afterbegin', render(g));
+                else $s.insertAdjacentHTML('afterbegin', renderRow(g));
             }
             const rows = $s.querySelectorAll('.gift');
             while (rows.length > MAX) rows[rows.length - 1].remove();
@@ -421,10 +442,10 @@
                             g._mergeCount=1; m.push(g);
                         }
                         data=m;
-                    } else data.forEach(g => g._mergeCount=1);
+                    } else data.forEach(g => g._mergeCount = 1);
                     lastMaxId = Math.max(...data.map(g => g.id || 0));
                     $e.style.display='none';
-                    $s.innerHTML = data.map(render).join('');
+                    $s.innerHTML = data.map(renderRow).join('');
                 }
             } catch(e) { console.error(e); }
             setInterval(poll, POLL); poll();

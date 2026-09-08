@@ -567,15 +567,6 @@ class LiveStatusNoticePlugin(BasePlugin):
         return f'{s}s'
 
     def _on_live_start(self):
-        # B站弹幕
-        if self._config.get('启用B站弹幕', True) and self._config.get('开播B站弹幕', True):
-            msg = self._config.get('开播弹幕', '开！')
-            result = self.send_danmu(msg)
-            if result.get('success'):
-                print(f"[{self.name}] 开播弹幕已发送: {msg}")
-            else:
-                print(f"[{self.name}] 开播弹幕发送失败: {result}")
-
         # QQ群
         if self._config.get('启用QQ群通知', False) and self._config.get('开播QQ通知', True):
             text = self._config.get('开播群文字', '开播啦~')
@@ -590,17 +581,6 @@ class LiveStatusNoticePlugin(BasePlugin):
 
     def _on_live_end(self, duration_sec: int | None = None):
         duration_text = self._format_duration(duration_sec) if duration_sec is not None else None
-
-        # B站弹幕
-        if self._config.get('启用B站弹幕', True) and self._config.get('下播B站弹幕', True):
-            msg = self._config.get('下播弹幕', '下播啦~')
-            if duration_text:
-                msg = f'{msg} 本次直播 {duration_text}'
-            result = self.send_danmu(msg)
-            if result.get('success'):
-                print(f"[{self.name}] 下播弹幕已发送: {msg}")
-            else:
-                print(f"[{self.name}] 下播弹幕发送失败: {result}")
 
         # QQ群
         if self._config.get('启用QQ群通知', False) and self._config.get('下播QQ通知', False):

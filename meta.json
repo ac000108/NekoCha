@@ -1,7 +1,7 @@
 {
   "version": "1.0.43",
-  "build_time": "2026-09-09 01:38:28",
-  "updated_at": 1788889108,
+  "build_time": "2026-09-09 02:05:01",
+  "updated_at": 1788890701,
   "file_count": 1054,
   "total_size": 177476576,
   "cdn_base": "https://gh-proxy.com/https://raw.githubusercontent.com/ac000108/NekoCha/main",
@@ -1183,18 +1183,18 @@
     {
       "name": "live_status_notice",
       "display_name": "开播下播通知",
-      "version": "1.3.5",
-      "description": "在直播间开播/下播/切轮播时自动发送弹幕通知，同时调用 NapCat 向 QQ 群发送消息。",
+      "version": "1.3.6",
+      "description": "在直播间开播/下播/切轮播时通过 NapCat 向 QQ 群发送通知消息和图片卡片。",
       "files": [
         {
           "path": "__init__.py",
-          "sha256": "1f7efc5d4fad39973fdb9af6c976cd9f8549e4ae499373344ce80ce48c8f0769",
-          "size": 23677
+          "sha256": "2220583e0d442ce5cf8b7ae6d58e0ab0ece1ee981ead81002402326817119490",
+          "size": 22729
         },
         {
           "path": "config.json",
-          "sha256": "1f50392a390806e518deb5fdd52d7d362d461707a68e929d02707cde755625ee",
-          "size": 1104
+          "sha256": "f2ed27e5b1e099b86ce229ceca8a9f7351056170569da6cc675e61d81c8ba865",
+          "size": 729
         },
         {
           "path": "fonts/Yozai-Regular.ttf",

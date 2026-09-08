@@ -712,8 +712,6 @@ async function enterRoomDetail(roomId) {
     await updateDetailStatus();
     if (roomId) {
         await loadRoomPlugins(roomId);
-    } else {
-        await loadPlugins();
     }
     startDetailStatusPolling();
 }
@@ -848,38 +846,9 @@ let _fullConfigCache = null;   // 保存渲染时的完整 config（含 _group_*
 let isMarketVisible = false;
 let _pluginView = 'installed'; // 'installed' | 'available'
 
-async function loadPlugins() {
-    // 从 CDN 拉取插件市场列表（临时使用，不缓存）
-    const url = `https://gh-proxy.com/https://raw.githubusercontent.com/ac000108/NekoCha/main/plugins.json?v=${Date.now()}`;
-    try {
-        const resp = await fetch(url, { signal: AbortSignal.timeout(3000) });
-        if (!resp.ok) throw new Error('fetch failed');
-        const data = await resp.json();
-        allPlugins = Array.isArray(data) ? data : (data.plugins || []);
-        window.allPluginsLoaded = true;
-        const searchInput = $('pluginSearch');
-        const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
-        if (keyword) {
-            const filtered = allPlugins.filter(p =>
-                p.display_name.toLowerCase().includes(keyword) ||
-                p.name.toLowerCase().includes(keyword)
-            );
-            renderSidebarPlugins(filtered);
-        } else {
-            renderSidebarPlugins(allPlugins);
-        }
-    } catch (e) {
-        allPlugins = [];
-        window.allPluginsLoaded = true;
-        renderSidebarPlugins([]);
-    }
-    if (!openSettingsPlugin) {
-        renderDefaultContent();
-    }
-}
-
-async function loadRoomPlugins(roomId) {
-    const result = await api('/rooms/' + roomId + '/plugins');
+async function loadRoomPlugins(roomId, withMarket = false) {
+    const suffix = withMarket ? '?with_market=true' : '';
+    const result = await api('/rooms/' + roomId + '/plugins' + suffix);
     if (result.success) {
         const data = result.data;
         allPlugins = data.installed || [];
@@ -948,7 +917,7 @@ function searchPlugins() {
     }
 
     // 默认：已安装插件视图
-    if (!allPlugins.length) { loadPlugins(); return; }
+    if (!allPlugins.length && currentRoomId) { loadRoomPlugins(currentRoomId).catch(() => {}); return; }
     const filtered = keyword
         ? allPlugins.filter(p => p.display_name.toLowerCase().includes(keyword) || p.name.toLowerCase().includes(keyword))
         : allPlugins;
@@ -1075,19 +1044,19 @@ async function uninstallPlugin(name) {
 async function showAvailablePlugins() {
     if (!currentRoomId) return;
     _pluginView = 'available';
-    // 直接使用缓存数据，无需额外 API 调用
+    // 先从后端拉（走 60s TTL 缓存，首次才碰 CDN）
+    await loadRoomPlugins(currentRoomId, true);
     if (!availablePlugins || availablePlugins.length === 0) {
         showNotification('所有插件均已安装', 'info');
         return;
     }
-    // 进入视图后也应用当前搜索词
     searchPlugins();
 }
 
 async function refreshAvailablePlugins() {
     if (!currentRoomId) return;
-    await loadPlugins();
-    await loadRoomPlugins(currentRoomId);
+    // 强制刷新：清掉后端缓存再拉
+    await loadRoomPlugins(currentRoomId, true);
     showAvailablePlugins();
 }
 
@@ -1102,10 +1071,15 @@ async function installRoomPlugin(name) {
     }
 }
 
+let _pluginSwitchingLock = {};  // {name: true} 防重入
+
 async function cyclePluginMode(name) {
     if (!currentRoomId || currentView !== 'detail') return;
+    if (_pluginSwitchingLock[name]) return;  // 防重入
     const plugin = allPlugins.find(p => p.name === name);
     if (!plugin) return;
+
+    _pluginSwitchingLock[name] = true;
 
     let target = {};
     let msg = '';
@@ -1124,12 +1098,19 @@ async function cyclePluginMode(name) {
         msg = '已启用自动控制';
     }
 
-    const result = await api('/rooms/' + currentRoomId + '/plugins/' + name, 'PUT', target);
-    if (result.success) {
-        await loadRoomPlugins(currentRoomId);
-        showNotification(msg);
-    } else {
-        showNotification(result.message || '操作失败', 'error');
+    try {
+        const result = await api('/rooms/' + currentRoomId + '/plugins/' + name, 'PUT', target);
+        if (result.success) {
+            showNotification(msg);
+            // 后台刷新插件列表（不阻塞 UI 响应）
+            loadRoomPlugins(currentRoomId).catch(() => {});
+        } else {
+            showNotification(result.message || '操作失败', 'error');
+        }
+    } catch (e) {
+        showNotification('操作失败', 'error');
+    } finally {
+        _pluginSwitchingLock[name] = false;
     }
 }
 
@@ -1177,8 +1158,6 @@ async function savePluginSettingsAndClose(pluginName) {
     openSettingsPlugin = '';
     if (currentRoomId && currentView === 'detail') {
         loadRoomPlugins(currentRoomId);
-    } else {
-        loadPlugins();
     }
 }
 
@@ -1189,8 +1168,6 @@ async function cancelPluginSettings(pluginName) {
     isConfigModified = false;
     if (currentRoomId && currentView === 'detail') {
         loadRoomPlugins(currentRoomId);
-    } else {
-        loadPlugins();
     }
 }
 
@@ -1574,8 +1551,6 @@ function hideMarketModal() {
     renderDefaultContent();
     if (currentRoomId && currentView === 'detail') {
         loadRoomPlugins(currentRoomId);
-    } else {
-        loadPlugins();
     }
 }
 
@@ -1592,8 +1567,6 @@ async function showMarketModal() {
         isConfigModified = false;
         if (currentRoomId && currentView === 'detail') {
             loadRoomPlugins(currentRoomId);
-        } else {
-            loadPlugins();
         }
     }
 

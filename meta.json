@@ -1,7 +1,7 @@
 {
   "version": "1.0.41",
-  "build_time": "2026-09-08 11:01:51",
-  "updated_at": 1788836511,
+  "build_time": "2026-09-08 11:20:40",
+  "updated_at": 1788837640,
   "file_count": 1054,
   "total_size": 177465749,
   "cdn_base": "https://gh-proxy.com/https://raw.githubusercontent.com/ac000108/NekoCha/main",
@@ -1346,7 +1346,7 @@
     {
       "name": "gift_show",
       "display_name": "礼物展示",
-      "version": "1.1.6",
+      "version": "1.1.7",
       "description": "每秒查询数据库，滚动展示最新礼物记录",
       "files": [
         {
@@ -1356,13 +1356,13 @@
         },
         {
           "path": "config.json",
-          "sha256": "abb86b0ffc5399e96d36e931bf5e54ce1b3f17f19654d3d7892b4a55c0965d07",
+          "sha256": "da5bd68dcf0a45bf10774971fab9cdf087e05b10f2269964b9e2ba15722920cb",
           "size": 378
         },
         {
           "path": "display.html",
-          "sha256": "0d62955b4f9986c0d8fe862572cfe77acc997fc2663536aa144dc35aca0b4cc8",
-          "size": 19093
+          "sha256": "0a18eb3d4b00e3894f5c19bfb4831d87942ca530d302e99a9c33ec8084ea7f84",
+          "size": 18522
         }
       ]
     }

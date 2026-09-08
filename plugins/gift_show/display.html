@@ -42,13 +42,12 @@
             align-items: center;
             gap: 12px;
             padding: 10px 14px 10px 10px;
-            background: linear-gradient(90deg, #93c5fd 0%, #bfdbfe 35%, #dbeafe 60%, #f0f9ff 85%, #ffffff 100%);
+            background: linear-gradient(90deg, #93c5fd 0%, #bfdbfe 40%, #dbeafe 70%, #c7d2fe 100%);
             position: relative;
-            /* 左侧大圆角，右侧平(三角tail会盖) */
-            border-radius: 24px 0 0 24px;
-            /* clip-path 切出右侧交叉三角缺口 */
+            /* clip-path 切出形状，不用 border-radius */
             clip-path: url(#giftClip);
             animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 2px 6px rgba(30, 64, 175, 0.18));
         }
 
         @keyframes slideIn {
@@ -183,30 +182,21 @@
     </style>
 </head>
 <body>
-    <!-- SVG clip-path 定义右侧交叉三角缺口 -->
+    <!-- SVG clip-path：#03三角重叠凹口 + 左侧半圆头 -->
+    <!-- 卡片 500×76，左侧半圆半径=38px -->
+    <!-- 右侧：平顶→右上直角→斜到凹口→斜回右下直角→平到底内角点 -->
     <svg width="0" height="0" style="position:absolute">
         <defs>
             <clipPath id="giftClip" clipPathUnits="userSpaceOnUse">
-                <!-- 500宽 x 76高，右侧切出双三角交叉缺口 -->
-                <!-- 从左上(24,0)开始，左侧有圆角所以起点向内收 -->
-                <!-- 顶部向右走到 x=456，然后45°下斜到 y=38(中线)，再反向45°上到 x=476,y=0(小三角) -->
-                <!-- 再从顶部平走到x=500,y=0是外侧顶点 -->
-                <!-- 然后下到x=500,y=76 -->
-                <!-- 再45°斜上到x=476,y=38(中线),再45°斜下到x=456,y=76(第二个三角) -->
-                <!-- 底部平走到x=24,y=76,然后左下圆角-->
                 <path d="
-                    M 24 0
-                    L 458 0
-                    L 480 12
-                    L 460 24
-                    L 500 38
-                    L 460 52
-                    L 480 64
-                    L 458 76
-                    L 24 76
-                    Q 0 76 0 52
-                    L 0 24
-                    Q 0 0 24 0
+                    M 38 0
+                    L 460 0
+                    L 500 0
+                    L 460 38
+                    L 500 76
+                    L 460 76
+                    L 38 76
+                    A 38 38 0 1 0 38 0
                     Z
                 " />
             </clipPath>

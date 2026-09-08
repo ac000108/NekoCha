@@ -352,10 +352,8 @@ class DynamicPushPlugin(BasePlugin):
         return self._napcat_post(group_id, '/send_group_msg', {'message': segments})
 
     def _build_dynamic_url(self, message: dict) -> str:
-        dyn_id = message.get('动态ID', '')
-        if dyn_id:
-            return f'https://t.bilibili.com/{dyn_id}'
-        return ''
+        # 优先用服务端已构造好的新版协议链接
+        return message.get('动态链接', '')
 
     def process_message(self, message: dict):
         if message.get('消息类型') != '动态':

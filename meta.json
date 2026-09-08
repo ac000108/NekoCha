@@ -1,16 +1,16 @@
 {
-  "version": "1.0.39",
-  "build_time": "2026-09-08 02:43:30",
-  "updated_at": 1788806610,
+  "version": "1.0.40",
+  "build_time": "2026-09-08 08:41:34",
+  "updated_at": 1788828094,
   "file_count": 1054,
-  "total_size": 177462122,
+  "total_size": 177470826,
   "cdn_base": "https://gh-proxy.com/https://raw.githubusercontent.com/ac000108/NekoCha/main",
   "files": {
     "81d243bd2c585b0f4821__mypyc.pyd": "7e8e6f943b1dc7a132fbedb205f75a647c52817197c16c02f81cb358c5af5722",
     "libcrypto-3-x64.dll": "de0e82160049ebdbaf32c23f49ee21bca44917d294c5ca50a231327cb6ef0002",
     "libffi-8.dll": "dd57e6016559cbdb0c59579c311bf3fc28700a8023695478c350c10943cbeac2",
     "libssl-3-x64.dll": "b65bb38dbc314973712c9692a2b9c3c8ae6b0c1889641e83b8a835f6ab3e24ac",
-    "NekoCha.exe": "71b4bef1be164818e2136ad6d81abe4f9b51429fde9da7a334d83f5b4968d3a8",
+    "NekoCha.exe": "8ba4ead98e5a00ad47275c86cf77705ed8781d6b71d58c90b8bb25d902d11e72",
     "pyexpat.pyd": "c5a29c1eba79c46bdbe5b75cd549217d56c1ca09dafe576282be9996d80a7f5f",
     "python3.dll": "24fb5d7af90498a90abd742d8b01e4b8efcbf0797715863525d53ed84cd157ea",
     "python312.dll": "337c5e262a4f4f27565b1d1a3002a9d28aca52bec038ba2494999fe6cbce3426",
@@ -1323,17 +1323,17 @@
     {
       "name": "dynamic_push",
       "display_name": "动态推送",
-      "version": "1.0.11",
+      "version": "1.0.12",
       "description": "监听关注UP主的B站动态，生成卡片图片推送到QQ群。\n\n【配置说明】\n- QQ群号: 推送目标群号\n- 推送图片卡片: 是否发送动态卡片图片\n- @全体成员: 推送时是否@全体成员\n- 发送动态链接: 是否附带B站动态链接",
       "files": [
         {
           "path": "__init__.py",
-          "sha256": "2730aac1d07be0c30265f163c07c45cef83898bbadc7b792bc916bc9ebcb5588",
-          "size": 15895
+          "sha256": "290e5ef560b0616f66fce993ff641c1a3d7569c3c3904807fa4c65f825b67e21",
+          "size": 15868
         },
         {
           "path": "config.json",
-          "sha256": "496f4ace2f1bfd990876c2c25a43cae9138773c6602074c4dba0616a8e0e09cc",
+          "sha256": "c16157f9b69f8946e87d92b83553734538aebe74f3c9286795c54c4e751e5e18",
           "size": 531
         },
         {

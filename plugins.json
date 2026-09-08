@@ -1,5 +1,5 @@
 {
-  "updated_at": 1788806610,
+  "updated_at": 1788828094,
   "plugins": [
     {
       "name": "blind_box_stats",
@@ -262,17 +262,17 @@
     {
       "name": "dynamic_push",
       "display_name": "动态推送",
-      "version": "1.0.11",
+      "version": "1.0.12",
       "description": "监听关注UP主的B站动态，生成卡片图片推送到QQ群。\n\n【配置说明】\n- QQ群号: 推送目标群号\n- 推送图片卡片: 是否发送动态卡片图片\n- @全体成员: 推送时是否@全体成员\n- 发送动态链接: 是否附带B站动态链接",
       "files": [
         {
           "path": "__init__.py",
-          "sha256": "2730aac1d07be0c30265f163c07c45cef83898bbadc7b792bc916bc9ebcb5588",
-          "size": 15895
+          "sha256": "290e5ef560b0616f66fce993ff641c1a3d7569c3c3904807fa4c65f825b67e21",
+          "size": 15868
         },
         {
           "path": "config.json",
-          "sha256": "496f4ace2f1bfd990876c2c25a43cae9138773c6602074c4dba0616a8e0e09cc",
+          "sha256": "c16157f9b69f8946e87d92b83553734538aebe74f3c9286795c54c4e751e5e18",
           "size": 531
         },
         {

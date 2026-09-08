@@ -850,7 +850,7 @@ let _pluginView = 'installed'; // 'installed' | 'available'
 
 async function loadPlugins() {
     // 从 CDN 拉取插件市场列表（临时使用，不缓存）
-    const url = 'https://cdn.jsdelivr.net/gh/ac000108/NekoCha@main/plugins.json';
+    const url = `https://gh-proxy.com/https://raw.githubusercontent.com/ac000108/NekoCha/main/plugins.json?v=${Date.now()}`;
     try {
         const resp = await fetch(url, { signal: AbortSignal.timeout(3000) });
         if (!resp.ok) throw new Error('fetch failed');

@@ -182,20 +182,21 @@
     </style>
 </head>
 <body>
-    <!-- SVG clip-path：#03三角重叠凹口 + 左侧完整半圆头 -->
-    <!-- 卡片 500×76，左侧半圆半径=38px(=高/2)，起点在x=0 -->
+    <!-- SVG clip-path：矩形+Q贝塞尔圆角 + #03三角重叠凹口 -->
     <svg width="0" height="0" style="position:absolute">
         <defs>
             <clipPath id="giftClip" clipPathUnits="userSpaceOnUse">
                 <path d="
-                    M 0 0
+                    M 24 0
                     L 460 0
                     L 500 0
                     L 460 38
                     L 500 76
                     L 460 76
-                    L 0 76
-                    A 38 38 0 0 0 0 0
+                    L 24 76
+                    Q 0 76 0 52
+                    L 0 24
+                    Q 0 0 24 0
                     Z
                 " />
             </clipPath>

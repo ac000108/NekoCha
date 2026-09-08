@@ -33,53 +33,63 @@
             font-size: 14px;
         }
 
-        /* ============ 礼物卡片 ============ */
+        /* ============ 礼物卡片 容器 ============ */
         .gift {
             width: 500px;
             max-width: 95vw;
             height: 76px;
+            position: relative;
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 10px 14px 10px 10px;
-            background: linear-gradient(90deg, #93c5fd 0%, #bfdbfe 40%, #dbeafe 70%, #c7d2fe 100%);
-            position: relative;
-            /* clip-path 切出形状，不用 border-radius */
-            clip-path: url(#giftClip);
+            padding: 10px 14px 10px 32px;   /* 左侧留空间给大圆角 + 头像 */
             animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 背景层 —— 单独切形状，不影响内容 */
+        .gift-bg {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, #93c5fd 0%, #bfdbfe 40%, #dbeafe 70%, #c7d2fe 100%);
+            clip-path: url(#giftClip);
             filter: drop-shadow(0 2px 6px rgba(30, 64, 175, 0.18));
+            z-index: 0;
         }
 
         @keyframes slideIn {
             from { opacity: 0; transform: translateX(-16px); }
             to   { opacity: 1; transform: translateX(0); }
         }
-
         @keyframes mergeFlash {
             0%   { filter: brightness(1.08); }
             100% { filter: brightness(1); }
         }
-        .gift.merged { animation: mergeFlash 0.45s ease-out; }
+        .gift.merged .gift-bg { animation: mergeFlash 0.45s ease-out; }
 
-        /* 头像 */
+        /* 头像 —— 绝对定位到左侧，z-index 高于背景层 */
         .g-av {
+            position: absolute;
+            left: 4px;
+            top: 50%;
+            transform: translateY(-50%);
             width: 46px;
             height: 46px;
             border-radius: 50%;
             object-fit: cover;
-            flex-shrink: 0;
             border: 2px solid rgba(255,255,255,0.95);
             box-shadow: 0 2px 5px rgba(30, 64, 175, 0.18);
             background: #e2e8f0;
+            z-index: 2;
         }
 
-        /* 中间文字 */
+        /* 中间文字区 */
         .g-mid {
             flex: 1;
             min-width: 0;
             display: flex;
             flex-direction: column;
             gap: 6px;
+            z-index: 1;
         }
 
         .g-userline {
@@ -114,10 +124,7 @@
         .medal.舰长 { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
         .medal.粉丝团 { background: linear-gradient(135deg, #ec4899, #f472b6); color: #fff; }
 
-        .g-act {
-            font-size: 14px;
-            color: #334155;
-        }
+        .g-act { font-size: 14px; color: #334155; }
         .g-act .gn { color: #1e40af; font-weight: 600; }
         .g-act .blind { color: #b45309; font-weight: 600; }
 
@@ -129,6 +136,7 @@
             flex-shrink: 0;
             position: relative;
             padding-right: 12px;
+            z-index: 1;
         }
 
         .g-icon {
@@ -177,26 +185,26 @@
             font-size: 10px;
             font-weight: 700;
             border-radius: 8px;
-            z-index: 2;
+            z-index: 3;
         }
     </style>
 </head>
 <body>
-    <!-- SVG clip-path：矩形+Q贝塞尔圆角 + #03三角重叠凹口 -->
+    <!-- SVG clip-path：左侧极大圆角 + 右侧#03三角重叠凹口 -->
+    <!-- 500×76，左侧用Q贝塞尔做40px大圆角，右侧三角重叠 -->
     <svg width="0" height="0" style="position:absolute">
         <defs>
             <clipPath id="giftClip" clipPathUnits="userSpaceOnUse">
                 <path d="
-                    M 24 0
+                    M 40 0
                     L 460 0
                     L 500 0
                     L 460 38
                     L 500 76
                     L 460 76
-                    L 24 76
-                    Q 0 76 0 52
-                    L 0 24
-                    Q 0 0 24 0
+                    L 40 76
+                    Q 0 76 0 38
+                    Q 0 0 40 0
                     Z
                 " />
             </clipPath>
@@ -293,11 +301,13 @@
             }
 
             const badge = mn > 1 ? `<div class="g-badge">${mn}次</div>` : '';
+            const avImg = av ? `<img class="g-av" src="/api/proxy/avatar?url=${encodeURIComponent(av)}" onerror="this.style.display='none'">` : '<div class="g-av" style="display:flex;align-items:center;justify-content:center;background:#e2e8f0;font-size:18px;">👤</div>';
 
             return `
                 <div class="gift" data-id="${g.id}" data-user="${uid}" data-gift="${gname}" data-blind="${blind ? blindN : ''}" data-ts="${ts}" data-merge="${mn}">
+                    <div class="gift-bg"></div>
                     ${badge}
-                    ${av ? `<img class="g-av" src="/api/proxy/avatar?url=${encodeURIComponent(av)}" onerror="this.style.display='none'">` : '<div class="g-av" style="display:flex;align-items:center;justify-content:center;background:#e2e8f0;font-size:18px;">👤</div>'}
+                    ${avImg}
                     <div class="g-mid">
                         <div class="g-userline">
                             <span class="g-name">${name}</span>

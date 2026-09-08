@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>礼物展示</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --bg: transparent;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+        }
+
+        html, body {
+            height: 100%;
+            background: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        /* 滚动容器 */
+        .scroll-container {
+            height: 100vh;
+            overflow-y: auto;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .scroll-container::-webkit-scrollbar { width: 6px; }
+        .scroll-container::-webkit-scrollbar-track { background: transparent; }
+        .scroll-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+        .scroll-container::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.3); }
+
+        /* 空状态 */
+        .empty-hint {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* ============ 礼物卡片 ============ */
+        .gift-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 40%, #ffffff 100%);
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.08), 0 1px 2px rgba(0,0,0,0.04);
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-12px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* 合并高亮（刚合并时短暂闪光） */
+        .gift-card.merged {
+            animation: mergeFlash 0.5s ease-out;
+        }
+        @keyframes mergeFlash {
+            0% { box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4), 0 2px 8px rgba(14, 165, 233, 0.08); }
+            100% { box-shadow: 0 2px 8px rgba(14, 165, 233, 0.08), 0 1px 2px rgba(0,0,0,0.04); }
+        }
+
+        /* 左侧渐变色条 */
+        .gift-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #38bdf8, #818cf8);
+            border-radius: 14px 0 0 14px;
+        }
+
+        /* 用户信息区 */
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.8);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+            background: #e2e8f0;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .user-name-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .user-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* 粉丝牌标签 */
+        .medal-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            background: #e2e8f0;
+            color: var(--text-secondary);
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .medal-tag.medal-总督 { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .medal-tag.medal-提督 { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
+        .medal-tag.medal-舰长 { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+
+        /* 投喂描述 */
+        .gift-action {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .gift-action .gift-name-text {
+            color: #0284c7;
+            font-weight: 500;
+        }
+        .gift-action .blind-tag {
+            color: #f59e0b;
+            font-weight: 500;
+        }
+
+        /* 礼物展示区 */
+        .gift-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .gift-img-wrapper {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            flex-shrink: 0;
+        }
+
+        .gift-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .gift-emoji {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .gift-count {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0369a1;
+            line-height: 1;
+        }
+        .gift-count .x {
+            font-weight: 500;
+            color: #0284c7;
+            font-size: 16px;
+        }
+
+        /* 时间戳 */
+        .gift-time {
+            position: absolute;
+            bottom: 6px;
+            right: 14px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* 合并计数角标 */
+        .merge-badge {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            display: none;
+            padding: 1px 6px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+        .gift-card.merged-show .merge-badge { display: inline-block; }
+
+        /* 盲盒特殊样式 */
+        .gift-card.blind-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 40%, #ffffff 100%);
+        }
+        .gift-card.blind-box::before {
+            background: linear-gradient(180deg, #f59e0b, #ef4444);
+        }
+
+        /* 大金额礼物高亮 */
+        .gift-card.highlight {
+            background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 40%, #ffffff 100%);
+            box-shadow: 0 4px 16px rgba(236, 72, 153, 0.15), 0 1px 2px rgba(0,0,0,0.04);
+        }
+        .gift-card.highlight::before {
+            background: linear-gradient(180deg, #ec4899, #f97316);
+        }
+
+        /* 状态指示器 */
+        .status-bar {
+            position: fixed;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            font-size: 12px;
+            color: var(--text-secondary);
+            z-index: 100;
+            transition: opacity 0.3s;
+        }
+        .status-bar.hidden { opacity: 0; pointer-events: none; }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+        .status-dot.live {
+            background: #22c55e;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .status-dot.error {
+            background: #ef4444;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* 总价值显示 */
+        .gift-total {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-left: 4px;
+        }
+        .gift-total .amount {
+            color: #059669;
+            font-weight: 600;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- 状态指示器 -->
+    <div class="status-bar" id="statusBar">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">连接中...</span>
+        <span id="giftCountBadge" style="display:none;margin-left:6px;padding:1px 8px;background:#f1f5f9;border-radius:10px;color:#475569;font-size:11px;"></span>
+    </div>
+
+    <!-- 礼物列表 -->
+    <div class="scroll-container" id="scrollContainer">
+        <div class="empty-hint" id="emptyHint">等待礼物中...</div>
+    </div>
+
+    <script>
+        const _parts = window.location.pathname.split('/').filter(Boolean);
+        const ROOM_ID = _parts[1] || null;
+        const PLUGIN_NAME = _parts[3] || null;
+
+        // 配置
+        const POLL_INTERVAL = 1000;          // 每秒查询
+        const MAX_CARDS = 100;               // 最多保留100条
+        const INITIAL_LOAD = 30;              // 初始加载30条
+        const HIGHLIGHT_COIN = 10000;         // 超过10元高亮
+
+        // 运行时配置（从插件配置加载）
+        let RUNTIME_CONFIG = {
+            合并同用户同礼物: true,
+            合并窗口秒数: 5,
+            展示范围: '全部'
+        };
+
+        // 状态
+        let lastMaxId = 0;
+        let isPolling = false;
+        let totalGifts = 0;
+
+        const $container = document.getElementById('scrollContainer');
+        const $empty = document.getElementById('emptyHint');
+        const $statusDot = document.getElementById('statusDot');
+        const $statusText = document.getElementById('statusText');
+        const $statusBar = document.getElementById('statusBar');
+        const $badge = document.getElementById('giftCountBadge');
+
+        // ========== 加载插件配置 ==========
+        async function loadPluginConfig() {
+            if (!ROOM_ID) return;
+            try {
+                const resp = await fetch(`/rooms/${ROOM_ID}/plugins`);
+                const data = await resp.json();
+                if (data.success && data.data) {
+                    const pluginData = data.data.installed
+                        ? data.data.installed.find(p => p.name === PLUGIN_NAME)
+                        : (Array.isArray(data.data) ? data.data.find(p => p.name === PLUGIN_NAME) : null);
+                    if (pluginData && pluginData.config) {
+                        if (typeof pluginData.config['合并同用户同礼物'] === 'boolean')
+                            RUNTIME_CONFIG.合并同用户同礼物 = pluginData.config['合并同用户同礼物'];
+                        if (typeof pluginData.config['合并窗口秒数'] === 'number')
+                            RUNTIME_CONFIG.合并窗口秒数 = pluginData.config['合并窗口秒数'];
+                        if (pluginData.config['展示范围'])
+                            RUNTIME_CONFIG.展示范围 = pluginData.config['展示范围'];
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // ========== 时间范围计算 ==========
+        function getTimeRange() {
+            const now = new Date();
+            const start = new Date();
+            if (RUNTIME_CONFIG.展示范围 === '当天') {
+                start.setHours(0, 0, 0, 0);
+            } else if (RUNTIME_CONFIG.展示范围 === '当月') {
+                start.setDate(1);
+                start.setHours(0, 0, 0, 0);
+            } else {
+                return null; // 全部
+            }
+            return { startTs: Math.floor(start.getTime() / 1000), endTs: Math.floor(now.getTime() / 1000) };
+        }
+
+        // ========== 工具函数 ==========
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function formatTime(ts) {
+            if (!ts) return '';
+            const num = typeof ts === 'number' ? ts : parseFloat(ts);
+            if (isNaN(num)) return '';
+            const d = new Date(num < 1e12 ? num * 1000 : num);
+            if (isNaN(d.getTime())) return '';
+            const pad = n => String(n).padStart(2, '0');
+            return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+        }
+
+        function formatDate(ts) {
+            if (!ts) return '';
+            const num = typeof ts === 'number' ? ts : parseFloat(ts);
+            if (isNaN(num)) return '';
+            const d = new Date(num < 1e12 ? num * 1000 : num);
+            if (isNaN(d.getTime())) return '';
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+        }
+
+        function getGiftEmoji(giftName) {
+            const emojiMap = {
+                '人气票': '🎫', '小心心': '💖', '小心冰淇淋': '🍦',
+                '小花花': '🌸', '棒棒糖': '🍭', '赞啊': '👍',
+                'B坷垃': '🎁', '喵喵喵': '🐱', '咚咚咚': '🥁',
+                '投喂': '🍖', '金币': '🪙', '金瓜子': '✨',
+                '粉丝团灯牌': '🚪', '粉丝手幅': '🎌', '摸摸头': '🤗',
+                '辣条': '🌶️', '节奏灯': '💡', '打call': '📣',
+                '应援棒': '🔦', '小星星': '⭐', '超级星': '🌟',
+                '舰长大人': '👑', '总督': '👑', '提督': '🎖️',
+                '甜橙': '🍊', '大吉': '🎴', '干杯': '🍻',
+                '比心': '💗', '爱心': '❤️', '蛋糕': '🎂',
+            };
+            for (const [key, emoji] of Object.entries(emojiMap)) {
+                if (giftName && giftName.includes(key)) return emoji;
+            }
+            return '🎁';
+        }
+
+        // ========== 数据库查询 ==========
+        async function queryDB(sql, params = []) {
+            if (!ROOM_ID) return [];
+            const response = await fetch('/api/db/query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'sql=' + encodeURIComponent(sql) + '&params=' + encodeURIComponent(JSON.stringify(params)) + '&room_id=' + encodeURIComponent(ROOM_ID)
+            });
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            return await response.json();
+        }
+
+        // ========== 礼物卡片渲染 ==========
+        function renderGiftCard(gift) {
+            const userId = gift['用户ID'] || 0;
+            const userName = escapeHtml(gift['用户名'] || '匿名用户');
+            const avatarUrl = gift['头像URL'] || '';
+            const giftId = gift['礼物ID'] || '';
+            const giftName = escapeHtml(gift['礼物名称'] || '礼物');
+            const giftImgUrl = gift['礼物图片URL'] || '';
+            const giftCount = gift['礼物数量'] || 1;
+            const totalValue = gift['总价值'] || 0;
+            const isBlindBox = gift['是否盲盒'] == 1;
+            const blindName = escapeHtml(gift['盲盒名称'] || '');
+            const blindProfit = gift['盲盒盈亏'] || 0;
+            const medalName = escapeHtml(gift['粉丝牌名称'] || '');
+            const medalLevel = gift['粉丝牌等级'] || '';
+            const guardLevel = escapeHtml(gift['舰长等级'] || '');
+            const timestamp = gift['时间戳'];
+
+            // 粉丝牌样式
+            let medalClass = 'medal-tag';
+            if (guardLevel === '总督') medalClass += ' medal-总督';
+            else if (guardLevel === '提督') medalClass += ' medal-提督';
+            else if (guardLevel === '舰长') medalClass += ' medal-舰长';
+
+            let medalHtml = '';
+            if (medalName) {
+                medalHtml = `<span class="${medalClass}">${medalName}${medalLevel ? 'Lv' + medalLevel : ''}</span>`;
+            }
+
+            // 礼物图片
+            let giftImgHtml = '';
+            if (giftId) {
+                const safeName = giftName.replace(/[\\/:*?"<>|]/g, '_');
+                const localFile = safeName + giftId + '.png';
+                const proxyUrl = giftImgUrl ? '/api/proxy/avatar?url=' + encodeURIComponent(giftImgUrl) : '';
+                const safeCdn = giftImgUrl.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                giftImgHtml = `<img class="gift-img" src="/gift_data/images/${encodeURIComponent(localFile)}" alt="" onerror="giftFallback(this,'${safeCdn}',${proxyUrl ? 1 : 0})">`;
+            } else {
+                giftImgHtml = `<div class="gift-emoji">${getGiftEmoji(giftName)}</div>`;
+            }
+
+            // 卡片 class
+            let cardClass = 'gift-card';
+            if (isBlindBox) cardClass += ' blind-box';
+            if (totalValue >= HIGHLIGHT_COIN) cardClass += ' highlight';
+
+            // 合并计数
+            const mergeCount = gift['_mergeCount'] || 1;
+            if (mergeCount > 1) cardClass += ' merged-show';
+
+            // 盲盒标签
+            let blindHtml = '';
+            if (isBlindBox && blindName) {
+                const profitSign = blindProfit > 0 ? '+' : '';
+                const profitCls = blindProfit > 0 ? 'color:#059669' : (blindProfit < 0 ? 'color:#dc2626' : 'color:#6b7280');
+                blindHtml = ` <span class="blind-tag">🎲 ${blindName}</span>`;
+                if (blindProfit !== 0) {
+                    blindHtml += ` <span style="font-size:11px;${profitCls}">${profitSign}${(blindProfit/1000).toFixed(2)}元</span>`;
+                }
+            }
+
+            // 总价值
+            let totalHtml = '';
+            if (totalValue > 1000) {
+                totalHtml = `<span class="gift-total">共 <span class="amount">${(totalValue/1000).toFixed(2)}</span>元</span>`;
+            }
+
+            const timeStr = formatTime(timestamp);
+            const dateStr = formatDate(timestamp);
+
+            // 是否显示日期（跨天时）
+            let dateHtml = '';
+            if (gift['_showDate']) {
+                dateHtml = `<span style="font-size:11px;color:#94a3b8;margin-left:6px;">${dateStr}</span>`;
+            }
+
+            return `
+                <div class="${cardClass}" data-id="${gift.id}" data-user="${userId}" data-gift="${gift['礼物名称']}" data-blind="${isBlindBox ? (gift['盲盒名称'] || '') : ''}">
+                    <div class="merge-badge" data-merge-badge>${mergeCount}次</div>
+                    <div class="user-area">
+                        ${avatarUrl ? `<img class="avatar" src="/api/proxy/avatar?url=${encodeURIComponent(avatarUrl)}" alt="" onerror="this.style.display='none'">` : '<div class="avatar" style="display:flex;align-items:center;justify-content:center;font-size:20px;background:#e2e8f0;">👤</div>'}
+                        <div class="user-info">
+                            <div class="user-name-row">
+                                <span class="user-name">${userName}</span>
+                                ${medalHtml}
+                                ${dateHtml}
+                            </div>
+                            <div class="gift-action">
+                                投喂了 <span class="gift-name-text">${giftName}</span>
+                                ${blindHtml}
+                                ${totalHtml}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gift-area">
+                        <div class="gift-img-wrapper">${giftImgHtml}</div>
+                        <div class="gift-count"><span class="x">×</span>${giftCount}</div>
+                    </div>
+                    ${timeStr ? `<div class="gift-time">${timeStr}</div>` : ''}
+                </div>
+            `;
+        }
+
+        function giftFallback(img, cdnUrl, hasCdn) {
+            hasCdn = !!hasCdn;
+            if (!img.dataset.fb) {
+                img.dataset.fb = '1';
+                const giftId = img.src.match(/\/(\d+)\.png$/);
+                if (giftId && giftId[1] !== '0') {
+                    img.src = '/gift_data/images/' + giftId[1] + '.png';
+                    return;
+                }
+            }
+            if (hasCdn && !img.dataset.fc) {
+                img.dataset.fc = '1';
+                img.src = '/api/proxy/avatar?url=' + encodeURIComponent(cdnUrl);
+                return;
+            }
+            const wrapper = img.parentElement;
+            if (wrapper) {
+                const giftName = img.alt || '';
+                wrapper.innerHTML = `<div class="gift-emoji">${getGiftEmoji(giftName)}</div>`;
+            }
+        }
+
+        // ========== 合并逻辑 ==========
+        // 检查容器中是否有可合并的卡片（同用户ID + 同礼物名称 + 同盲盒 + 时间窗内）
+        function findMergeableCard(gift) {
+            if (!RUNTIME_CONFIG.合并同用户同礼物) return null;
+
+            const userId = gift['用户ID'];
+            const giftName = gift['礼物名称'];
+            const isBlindBox = gift['是否盲盒'] == 1;
+            const blindName = isBlindBox ? (gift['盲盒名称'] || '') : '';
+            const giftTs = typeof gift['时间戳'] === 'number' ? gift['时间戳'] : parseFloat(gift['时间戳']);
+            const windowSec = RUNTIME_CONFIG.合并窗口秒数 || 5;
+
+            // 从顶部（最新）向下找，找到第一个匹配的
+            const cards = $container.querySelectorAll('.gift-card');
+            for (let i = 0; i < cards.length; i++) {
+                const card = cards[i];
+                if (card.dataset.user !== String(userId)) continue;
+                if (card.dataset.gift !== giftName) continue;
+                if (card.dataset.blind !== blindName) continue;
+
+                // 检查时间窗口
+                const cardTimeAttr = card.querySelector('.gift-time');
+                if (!cardTimeAttr) return card; // 没时间就合并
+
+                // 从已有 card 的 data 中取时间（存在 data-ts 上）
+                const cardTs = parseFloat(card.dataset.ts || 0);
+                if (cardTs && giftTs && Math.abs(giftTs - cardTs) <= windowSec * 60) {
+                    return card;
+                }
+            }
+            return null;
+        }
+
+        function mergeIntoCard(card, gift) {
+            // 累加计数和总价值
+            const newCount = gift['礼物数量'] || 1;
+            const newTotal = gift['总价值'] || 0;
+
+            // 读取当前状态
+            const curMergeCount = parseInt(card.dataset.mergeCount || '1');
+            const curTotal = parseInt(card.dataset.totalValue || '0');
+
+            const totalMergeCount = curMergeCount + 1;
+            const totalValue = curTotal + newTotal;
+
+            card.dataset.mergeCount = totalMergeCount;
+            card.dataset.totalValue = totalValue;
+
+            // 更新角标
+            const badge = card.querySelector('[data-merge-badge]');
+            if (badge) badge.textContent = totalMergeCount + '次';
+
+            // 更新 ×数量
+            const countEl = card.querySelector('.gift-count');
+            if (countEl) {
+                const curCountText = countEl.textContent.replace(/×/g, '').trim();
+                const curCount = parseInt(curCountText) || 1;
+                countEl.innerHTML = `<span class="x">×</span>${curCount + newCount - 1}`;
+            }
+
+            // 更新总价值显示
+            if (totalValue > 1000) {
+                const actionEl = card.querySelector('.gift-action');
+                if (actionEl) {
+                    // 移除旧的 total 元素
+                    const oldTotal = actionEl.querySelector('.gift-total');
+                    if (oldTotal) oldTotal.remove();
+                    const totalHtml = `<span class="gift-total">共 <span class="amount">${(totalValue/1000).toFixed(2)}</span>元</span>`;
+                    actionEl.insertAdjacentHTML('beforeend', totalHtml);
+                }
+            }
+
+            // 更新时间为最新礼物的时间
+            const newTs = gift['时间戳'];
+            if (newTs) {
+                card.dataset.ts = newTs;
+                const timeEl = card.querySelector('.gift-time');
+                if (timeEl) timeEl.textContent = formatTime(newTs);
+            }
+
+            // 播放合并动画
+            card.classList.remove('merged');
+            void card.offsetWidth;
+            card.classList.add('merged');
+        }
+
+        // ========== 添加礼物卡片（支持合并） ==========
+        function addGiftCards(gifts) {
+            if (gifts.length === 0) return;
+
+            // 隐藏空状态
+            if ($empty) $empty.style.display = 'none';
+
+            // 按顺序处理每条礼物
+            for (const gift of gifts) {
+                // 检查是否可合并
+                const mergeTarget = findMergeableCard(gift);
+                if (mergeTarget) {
+                    mergeIntoCard(mergeTarget, gift);
+                } else {
+                    const html = renderGiftCard(gift);
+                    $container.insertAdjacentHTML('afterbegin', html);
+                    // 存初始 merge 状态
+                    const newCard = $container.querySelector(`.gift-card[data-id="${gift.id}"]`);
+                    if (newCard) {
+                        newCard.dataset.mergeCount = '1';
+                        newCard.dataset.totalValue = gift['总价值'] || 0;
+                        if (gift['时间戳']) newCard.dataset.ts = gift['时间戳'];
+                    }
+                }
+            }
+
+            // 更新 totalGifts（原始数量）
+            totalGifts += gifts.length;
+            $badge.textContent = `累计 ${totalGifts}`;
+            $badge.style.display = 'inline-block';
+
+            // 移除超出 MAX_CARDS 的旧卡片
+            const cards = $container.querySelectorAll('.gift-card');
+            while (cards.length > MAX_CARDS) {
+                cards[cards.length - 1].remove();
+            }
+        }
+
+        // ========== 轮询 ==========
+        function buildPollQueryParams() {
+            const range = getTimeRange();
+            if (range) {
+                return {
+                    sql: 'SELECT * FROM gift WHERE id > ? AND "时间戳" >= ? ORDER BY id ASC LIMIT 50',
+                    params: [lastMaxId, range.startTs]
+                };
+            }
+            return {
+                sql: 'SELECT * FROM gift WHERE id > ? ORDER BY id ASC LIMIT 50',
+                params: [lastMaxId]
+            };
+        }
+
+        async function pollOnce() {
+            if (isPolling) return;
+            isPolling = true;
+
+            try {
+                const qp = buildPollQueryParams();
+                const data = await queryDB(qp.sql, qp.params);
+
+                if (data && data.length > 0) {
+                    // 更新 lastMaxId
+                    const newMaxId = Math.max(...data.map(g => g.id || 0));
+                    if (newMaxId > lastMaxId) lastMaxId = newMaxId;
+
+                    addGiftCards(data);
+
+                    $statusDot.className = 'status-dot live';
+                    $statusText.textContent = '直播中';
+                    $statusBar.classList.add('hidden');
+                    setTimeout(() => $statusBar.classList.remove('hidden'), 1000);
+                }
+            } catch (e) {
+                console.error('Poll error:', e);
+                $statusDot.className = 'status-dot error';
+                $statusText.textContent = '连接异常';
+            } finally {
+                isPolling = false;
+            }
+        }
+
+        // ========== 初始加载 ==========
+        async function initialLoad() {
+            try {
+                const range = getTimeRange();
+                let sql, params;
+                if (range) {
+                    sql = 'SELECT * FROM gift WHERE "时间戳" >= ? ORDER BY id DESC LIMIT ?';
+                    params = [range.startTs, INITIAL_LOAD];
+                } else {
+                    sql = 'SELECT * FROM gift ORDER BY id DESC LIMIT ?';
+                    params = [INITIAL_LOAD];
+                }
+
+                const data = await queryDB(sql, params);
+
+                if (data && data.length > 0) {
+                    data.reverse();
+
+                    lastMaxId = Math.max(...data.map(g => g.id || 0));
+                    totalGifts = data.length;
+                    $badge.textContent = `累计 ${totalGifts}`;
+                    $badge.style.display = 'inline-block';
+
+                    $empty.style.display = 'none';
+
+                    // 合并初始数据
+                    let mergedData = [];
+                    for (const g of data) {
+                        if (RUNTIME_CONFIG.合并同用户同礼物 && mergedData.length > 0) {
+                            const last = mergedData[mergedData.length - 1];
+                            if (last['用户ID'] === g['用户ID'] &&
+                                last['礼物名称'] === g['礼物名称'] &&
+                                (last['是否盲盒'] == 1 ? (last['盲盒名称'] || '') : '') ===
+                                (g['是否盲盒'] == 1 ? (g['盲盒名称'] || '') : '')) {
+                                const lastTs = typeof last['时间戳'] === 'number' ? last['时间戳'] : parseFloat(last['时间戳']);
+                                const curTs = typeof g['时间戳'] === 'number' ? g['时间戳'] : parseFloat(g['时间戳']);
+                                const windowSec = RUNTIME_CONFIG.合并窗口秒数 || 5;
+                                if (Math.abs(curTs - lastTs) <= windowSec * 60) {
+                                    // 合并到 last
+                                    last['礼物数量'] = (last['礼物数量'] || 1) + (g['礼物数量'] || 1);
+                                    last['总价值'] = (last['总价值'] || 0) + (g['总价值'] || 0);
+                                    last['_mergeCount'] = (last['_mergeCount'] || 1) + 1;
+                                    continue;
+                                }
+                            }
+                        }
+                        g['_mergeCount'] = 1;
+                        mergedData.push(g);
+                    }
+
+                    // 检查是否需要显示日期（跨天数据）
+                    if (RUNTIME_CONFIG.展示范围 === '全部') {
+                        const seenDates = {};
+                        for (const g of mergedData) {
+                            const d = formatDate(g['时间戳']);
+                            if (!seenDates[d]) {
+                                g['_showDate'] = true;
+                                seenDates[d] = true;
+                            } else {
+                                g['_showDate'] = false;
+                            }
+                        }
+                    }
+
+                    const html = mergedData.map(g => renderGiftCard(g)).join('');
+                    $container.innerHTML = html;
+
+                    // 初始化合并状态到 DOM
+                    for (let i = 0; i < mergedData.length; i++) {
+                        const cards = $container.querySelectorAll('.gift-card');
+                        if (cards[i]) {
+                            const g = mergedData[i];
+                            cards[i].dataset.mergeCount = g['_mergeCount'] || 1;
+                            cards[i].dataset.totalValue = g['总价值'] || 0;
+                            if (g['时间戳']) cards[i].dataset.ts = g['时间戳'];
+                        }
+                    }
+
+                    requestAnimationFrame(() => {
+                        $container.scrollTop = 0;
+                    });
+                }
+            } catch (e) {
+                console.error('Initial load error:', e);
+            }
+
+            // 开始轮询
+            setInterval(pollOnce, POLL_INTERVAL);
+            pollOnce();
+        }
+
+        // ========== 重新加载（设置变更时调用） ==========
+        function reloadAll() {
+            // 清空
+            $container.innerHTML = '';
+            lastMaxId = 0;
+            totalGifts = 0;
+            $badge.style.display = 'none';
+            $empty.style.display = '';
+
+            // 重新加载（轮询会继续）
+            initialLoad();
+        }
+
+        // ========== 启动 ==========
+        if (!ROOM_ID) {
+            $statusText.textContent = '错误: 缺少房间ID';
+        } else {
+            $statusDot.className = 'status-dot live';
+            $statusText.textContent = '连接中';
+            loadPluginConfig().then(() => {
+                initialLoad();
+            });
+        }
+    </script>
+</body>
+</html>

@@ -186,18 +186,16 @@
     </style>
 </head>
 <body>
-    <!-- SVG clip-path：左侧半圆 + 右下角切三角 -->
+    <!-- SVG clip-path：左侧半圆 + 右侧整角斜切 -->
     <svg width="0" height="0" style="position:absolute">
         <defs>
             <clipPath id="giftClip" clipPathUnits="userSpaceOnUse">
                 <path d="
                     M 38 0
                     L 500 0
-                    L 500 38
-                    L 462 76
+                    L 424 76
                     L 38 76
-                    Q 0 76 0 38
-                    Q 0 0 38 0
+                    A 38 38 0 0 1 38 0
                     Z
                 " />
             </clipPath>

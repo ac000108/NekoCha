@@ -41,8 +41,8 @@
             position: relative;
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 10px 14px 10px 0;
+            gap: 10px;
+            padding: 8px 14px 8px 0;
             animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -65,17 +65,17 @@
         }
         .gift.merged .gift-bg { animation: mergeFlash 0.45s ease-out; }
 
-        /* 头像 —— flex 参与排版，圆心与左侧半圆圆心对齐 */
+        /* 头像 —— 完全在卡片内，覆盖左侧半圆区域 */
         .g-av {
-            width: 46px;
-            height: 46px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid rgba(255,255,255,0.95);
             box-shadow: 0 2px 5px rgba(30, 64, 175, 0.18);
             background: #e2e8f0;
             z-index: 2;
-            margin-left: -23px;
+            margin-left: 0;
             flex-shrink: 0;
         }
 

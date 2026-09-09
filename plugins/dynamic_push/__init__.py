@@ -4,6 +4,7 @@
 import io
 import os
 import re
+import time
 import urllib.request
 
 from core.plugin_manager import BasePlugin
@@ -158,6 +159,7 @@ def draw_dynamic_card(msg: dict) -> bytes:
     pub_time_display = msg.get('发布时间', '')
     dyn_type = msg.get('动态类型', '')
     text_content = msg.get('配文', '')
+    dyn_title = msg.get('动态标题', '')
 
     # 表情映射
     merged_emoji_map = dict(msg.get('动态表情', {}) or {})
@@ -211,21 +213,30 @@ def draw_dynamic_card(msg: dict) -> bytes:
     text_lines = wrap_text(temp_draw, text_content, body_font, content_width)
     text_h = len(text_lines) * s(36)
 
+    title_lines = wrap_text(temp_draw, dyn_title, body_font, content_width) if dyn_title else []
+    title_h = len(title_lines) * s(36) if title_lines else 0
+
     card_h = 0  # 最终卡片图片区域的总高度（计算用）
     card_type = 'none'   # 'video' | 'multi' | 'single' | 'none'
     card_data = {}       # 存下载好的图片 + 尺寸等
 
-    if is_video and cover_url:
-        # 视频动态：封面 + 标题 + 简介 小卡片
-        video_cover = _download_image(cover_url)
+    if is_video:
+        # 视频动态：始终渲染标题+简介，封面下载成功则显示在左侧
+        card_type = 'video'
+        card_cover_w = s(220)
+        card_cover_h = 0
+        video_cover = None
+        if cover_url:
+            video_cover = _download_image(cover_url)
         if video_cover:
-            card_type = 'video'
-            card_cover_w = s(220)
             ratio = card_cover_w / video_cover.width
             card_cover_h = int(video_cover.height * ratio)
             video_cover = video_cover.resize((card_cover_w, card_cover_h), Image.LANCZOS)
-            card_data = {'cover_img': video_cover, 'cover_w': card_cover_w, 'cover_h': card_cover_h}
-            card_h = card_cover_h
+        # 卡片高度：有封面用封面高度，没封面用最小高度
+        card_h = max(card_cover_h, s(100))
+        card_data = {
+            'cover_img': video_cover, 'cover_w': card_cover_w, 'cover_h': card_cover_h,
+        }
     elif pics:
         # 图文动态（可能多张）：九宫格布局，全部裁成正方形
         COLS = 3
@@ -284,7 +295,7 @@ def draw_dynamic_card(msg: dict) -> bytes:
             }
             card_h = grid_h
 
-    total_h = MARGIN + header_h + (text_h + 16 if text_lines else 0) + (card_h + 16 if card_h else 0) + MARGIN
+    total_h = MARGIN + header_h + (title_h + 10 if title_h else 0) + (text_h + 16 if text_lines else 0) + (card_h + 16 if card_h else 0) + MARGIN
     # 纯文字无图动态：最小高度 500px，与视频卡片对齐
     if card_type == 'none':
         total_h = max(total_h, s(250))
@@ -309,29 +320,42 @@ def draw_dynamic_card(msg: dict) -> bytes:
     draw_line_fallback(draw, img, meta, meta_font, meta_fb_font, '#9499A0', name_x, y + s(34), name_max_w, s(24))
     y += header_h
 
+    if dyn_title:
+        title_font_draw = font(s(24))
+        title_fb_font_draw = fallback_font(s(24))
+        for line in title_lines:
+            y = draw_line_fallback(draw, img, line, title_font_draw, title_fb_font_draw, '#00B5E2', MARGIN, y, content_width, s(32))
+        y += s(4)
+
     if text_content:
         y = draw_text_with_emoji(draw, img, text_content, body_font, merged_emoji_map, MARGIN, y, content_width, s(36))
         y += s(10)
 
     if card_type == 'video':
-        # 视频动态：左侧封面 + 右侧标题简介
+        # 视频动态：左侧封面 + 右侧标题简介（封面可选）
         d = card_data
         card_bg_x = MARGIN
         card_bg_w = content_width
         draw.rounded_rectangle([card_bg_x, y, card_bg_x + card_bg_w, y + card_h], radius=s(8), fill='#F1F2F3')
-        cover_mask = Image.new('L', (d['cover_w'], d['cover_h']), 0)
-        ImageDraw.Draw(cover_mask).rounded_rectangle([0, 0, d['cover_w'], d['cover_h']], radius=s(6), fill=255)
-        img.paste(d['cover_img'], (card_bg_x, y), cover_mask)
-        if duration_text:
-            tb = mini_font.getbbox(duration_text)
-            tw = tb[2] - tb[0]
-            th = tb[3] - tb[1]
-            dur_x = card_bg_x + d['cover_w'] - tw - s(8)
-            dur_y = y + d['cover_h'] - th - s(6)
-            draw.text((dur_x + 1, dur_y + 1), duration_text, fill='#00000080', font=mini_font)
-            draw.text((dur_x, dur_y), duration_text, fill='#FFFFFF', font=mini_font)
-        text_x = card_bg_x + d['cover_w'] + s(14)
-        text_area_w = card_bg_w - d['cover_w'] - s(14) - s(10)
+        if d['cover_img']:
+            # 有封面：贴封面 + 时长标签
+            cover_mask = Image.new('L', (d['cover_w'], d['cover_h']), 0)
+            ImageDraw.Draw(cover_mask).rounded_rectangle([0, 0, d['cover_w'], d['cover_h']], radius=s(6), fill=255)
+            img.paste(d['cover_img'], (card_bg_x, y), cover_mask)
+            if duration_text:
+                tb = mini_font.getbbox(duration_text)
+                tw = tb[2] - tb[0]
+                th = tb[3] - tb[1]
+                dur_x = card_bg_x + d['cover_w'] - tw - s(8)
+                dur_y = y + d['cover_h'] - th - s(6)
+                draw.text((dur_x + 1, dur_y + 1), duration_text, fill='#00000080', font=mini_font)
+                draw.text((dur_x, dur_y), duration_text, fill='#FFFFFF', font=mini_font)
+            text_x = card_bg_x + d['cover_w'] + s(14)
+            text_area_w = card_bg_w - d['cover_w'] - s(14) - s(10)
+        else:
+            # 无封面：标题简介占满宽度
+            text_x = card_bg_x + s(14)
+            text_area_w = card_bg_w - s(28)
         title_font_card = font(s(24))
         title_fb_font_card = fallback_font(s(24))
         desc_font_card = font(s(16))
@@ -437,23 +461,44 @@ class DynamicPushPlugin(BasePlugin):
         except (ValueError, TypeError):
             return
 
+        notice_text = self._config.get('提醒文字', '新动态来了')
         at_all = self._config.get('@全体成员', False)
+        send_card = self._config.get('发送图片卡片', True)
         send_link = self._config.get('发送动态链接', True)
         dyn_url = self._build_dynamic_url(message) if send_link else ''
 
-        # 图片卡片
-        if self._config.get('推送图片卡片', True):
+        # 第一条：提醒（带或不带@）
+        try:
+            segments = []
+            if at_all:
+                segments.append({'type': 'at', 'data': {'qq': 'all'}})
+                segments.append({'type': 'text', 'data': {'text': ' ' + notice_text}})
+            else:
+                segments.append({'type': 'text', 'data': {'text': notice_text}})
+            self._send_segments(group_id, segments)
+            time.sleep(0.5)
+        except Exception as e:
+            print(f"[{self.name}] 发送提醒失败: {e}")
+
+        # 第二条：图片卡片
+        if send_card:
             try:
                 card_bytes = draw_dynamic_card(message)
                 if card_bytes:
                     import base64
                     b64 = base64.b64encode(card_bytes).decode('utf-8')
-                    segments = []
-                    if at_all:
-                        segments.append({'type': 'at', 'data': {'qq': 'all'}})
-                    segments.append({'type': 'image', 'data': {'file': f'base64://{b64}'}})
-                    if dyn_url:
-                        segments.append({'type': 'text', 'data': {'text': f'\n{dyn_url}'}})
-                    self._send_segments(group_id, segments)
+                    self._send_segments(group_id, [
+                        {'type': 'image', 'data': {'file': f'base64://{b64}'}},
+                    ])
+                    time.sleep(0.5)
             except Exception as e:
                 print(f"[{self.name}] 生成卡片失败: {e}")
+
+        # 第三条：动态链接
+        if dyn_url:
+            try:
+                self._send_segments(group_id, [
+                    {'type': 'text', 'data': {'text': dyn_url}},
+                ])
+            except Exception as e:
+                print(f"[{self.name}] 发送链接失败: {e}")

@@ -987,19 +987,10 @@ function _renderAvailablePlugins(available) {
 }
 
 function updatePluginBadge(count) {
-    // 更新加号按钮上的可更新插件红点/数字徽章
+    // 给加号按钮切 has-update 类（按钮本体发光）
     const btn = $('addPluginBtn');
     if (!btn) return;
-    // 移除旧徽章
-    btn.classList.remove('has-update');
-    btn.querySelector('.update-badge')?.remove();
-    if (count > 0) {
-        btn.classList.add('has-update');
-        const badge = document.createElement('span');
-        badge.className = 'update-badge';
-        badge.textContent = count > 99 ? '99+' : count;
-        btn.appendChild(badge);
-    }
+    btn.classList.toggle('has-update', count > 0);
 }
 
 function renderSidebarPlugins(plugins) {

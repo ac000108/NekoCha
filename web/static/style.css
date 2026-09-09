@@ -695,24 +695,22 @@ html {
     position: relative;
 }
 
-/* 加号按钮上的可更新徽章 */
-.add-plugin-btn .update-badge {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
-    background: #ff4d4f;
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 16px;
-    text-align: center;
-    border-radius: 8px;
-    border: 2px solid var(--bg-primary);
-    box-sizing: border-box;
-    font-family: var(--font-mono);
+.add-plugin-btn:focus {
+    box-shadow: none;
+}
+
+/* 有更新时 —— 按钮本体发光（主题色呼吸） */
+.add-plugin-btn.has-update {
+    box-shadow: 0 0 6px 2px color-mix(in srgb, var(--accent-primary) 70%, transparent),
+                0 0 14px 4px color-mix(in srgb, var(--accent-primary) 40%, transparent);
+    animation: btn-glow 1.6s ease-in-out infinite;
+}
+
+@keyframes btn-glow {
+    0%, 100% { box-shadow: 0 0 6px 2px color-mix(in srgb, var(--accent-primary) 70%, transparent),
+                           0 0 14px 4px color-mix(in srgb, var(--accent-primary) 40%, transparent); }
+    50%      { box-shadow: 0 0 10px 3px color-mix(in srgb, var(--accent-primary) 90%, transparent),
+                           0 0 22px 6px color-mix(in srgb, var(--accent-primary) 55%, transparent); }
 }
 
 .sidebar-actions {

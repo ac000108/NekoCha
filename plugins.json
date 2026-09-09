@@ -1,5 +1,5 @@
 {
-  "updated_at": 1788922253,
+  "updated_at": 1788932610,
   "plugins": [
     {
       "name": "blind_box_stats",
@@ -262,18 +262,18 @@
     {
       "name": "dynamic_push",
       "display_name": "动态推送",
-      "version": "1.0.13",
-      "description": "监听关注UP主的B站动态，生成卡片图片推送到QQ群。\n\n【配置说明】\n- QQ群号: 推送目标群号\n- 推送图片卡片: 是否发送动态卡片图片\n- @全体成员: 推送时是否@全体成员\n- 发送动态链接: 是否附带B站动态链接",
+      "version": "1.0.15",
+      "description": "监听关注UP主的B站动态，生成卡片图片推送到QQ群。\n\n【配置说明】\n- QQ群号: 推送目标群号\n- @全体成员: 提醒消息中是否@全体成员\n- 提醒文字: 第一条提醒消息的文字内容\n- 发送图片卡片: 是否发送第二条动态卡片图片\n- 发送动态链接: 是否发送第三条B站动态链接",
       "files": [
         {
           "path": "__init__.py",
-          "sha256": "d352b16083abca069e0838a67397eea345e2f810c2f4f7ffe9c79384252a53ea",
-          "size": 18961
+          "sha256": "aee112498ee5a46a74f492384f0556b69a89a70ee929aa7f760fdd0830b6fe7d",
+          "size": 20719
         },
         {
           "path": "config.json",
-          "sha256": "9a81afef7dac8200b78ac6c44fb202e211dc310d2b3bb6dd45de1d341c033f48",
-          "size": 531
+          "sha256": "9f1bb2540fd28b33efaf74cd5b6695b17df2a624182e63358277417195f160ef",
+          "size": 639
         },
         {
           "path": "fonts/Yozai-Regular.ttf",

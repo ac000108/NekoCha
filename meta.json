@@ -1,16 +1,16 @@
 {
-  "version": "1.0.43",
-  "build_time": "2026-09-09 10:50:53",
-  "updated_at": 1788922253,
+  "version": "1.0.44",
+  "build_time": "2026-09-09 13:43:30",
+  "updated_at": 1788932610,
   "file_count": 1054,
-  "total_size": 177476576,
+  "total_size": 177476102,
   "cdn_base": "https://gh-proxy.com/https://raw.githubusercontent.com/ac000108/NekoCha/main",
   "files": {
     "81d243bd2c585b0f4821__mypyc.pyd": "7e8e6f943b1dc7a132fbedb205f75a647c52817197c16c02f81cb358c5af5722",
     "libcrypto-3-x64.dll": "de0e82160049ebdbaf32c23f49ee21bca44917d294c5ca50a231327cb6ef0002",
     "libffi-8.dll": "dd57e6016559cbdb0c59579c311bf3fc28700a8023695478c350c10943cbeac2",
     "libssl-3-x64.dll": "b65bb38dbc314973712c9692a2b9c3c8ae6b0c1889641e83b8a835f6ab3e24ac",
-    "NekoCha.exe": "32121b229ea43d027039eb89949c5e9be407af493ef20153d5eed5e361031543",
+    "NekoCha.exe": "d04e594ea8cb5f881dac6a9e7ead91d063930f050ecb531921b10e9b90f67a18",
     "pyexpat.pyd": "c5a29c1eba79c46bdbe5b75cd549217d56c1ca09dafe576282be9996d80a7f5f",
     "python3.dll": "24fb5d7af90498a90abd742d8b01e4b8efcbf0797715863525d53ed84cd157ea",
     "python312.dll": "337c5e262a4f4f27565b1d1a3002a9d28aca52bec038ba2494999fe6cbce3426",
@@ -1054,8 +1054,8 @@
     "propcache/_helpers_c.pyd": "228f70c637d5eb0b3f368a04b2bea054b3f4678d2021bf50475138472d34989f",
     "web/static/icon.ico": "88521918a4318f5c442fc9beefdd52460df2a3ef95763e94e0f6ae142be4e000",
     "web/static/icon.png": "a9fdaafa79442dd4944eeeb0ddfbebe5382b01a2a4d030c7c793bea68ed7adc3",
-    "web/static/main.js": "0958a4467f1f84194b45e896959f3cdc005d2ed407a7680ce5dc7428e1a1d42f",
-    "web/static/style.css": "4ebcf5f0e48a74722f201bbc322aace9162796434421731524f04744aaa73f8e",
+    "web/static/main.js": "7ad3437fd7fca2c1ca7f4510510aef779d77b5b41d6a52d8e0d4238d755b118c",
+    "web/static/style.css": "63dc177422d56f3f17141c1f4e288e578823e57658e6c105763b945aa7848d5c",
     "web/static/fonts/noto-sans-sc.ttf": "2a3736a8c43339e314ed55586a8740f651a7b57e6b1cca62ace5686fe1b93b90",
     "web/templates/main.html": "b177238b09fa1d1a6f8af37b3a14317435493803336e036789b34b01a22480dd",
     "websockets/speedups.pyd": "4142d854639e4d442f731874021571d58b09bceb3b7de90a61c44e3cc66d6350",
@@ -1323,18 +1323,18 @@
     {
       "name": "dynamic_push",
       "display_name": "动态推送",
-      "version": "1.0.13",
-      "description": "监听关注UP主的B站动态，生成卡片图片推送到QQ群。\n\n【配置说明】\n- QQ群号: 推送目标群号\n- 推送图片卡片: 是否发送动态卡片图片\n- @全体成员: 推送时是否@全体成员\n- 发送动态链接: 是否附带B站动态链接",
+      "version": "1.0.15",
+      "description": "监听关注UP主的B站动态，生成卡片图片推送到QQ群。\n\n【配置说明】\n- QQ群号: 推送目标群号\n- @全体成员: 提醒消息中是否@全体成员\n- 提醒文字: 第一条提醒消息的文字内容\n- 发送图片卡片: 是否发送第二条动态卡片图片\n- 发送动态链接: 是否发送第三条B站动态链接",
       "files": [
         {
           "path": "__init__.py",
-          "sha256": "d352b16083abca069e0838a67397eea345e2f810c2f4f7ffe9c79384252a53ea",
-          "size": 18961
+          "sha256": "aee112498ee5a46a74f492384f0556b69a89a70ee929aa7f760fdd0830b6fe7d",
+          "size": 20719
         },
         {
           "path": "config.json",
-          "sha256": "9a81afef7dac8200b78ac6c44fb202e211dc310d2b3bb6dd45de1d341c033f48",
-          "size": 531
+          "sha256": "9f1bb2540fd28b33efaf74cd5b6695b17df2a624182e63358277417195f160ef",
+          "size": 639
         },
         {
           "path": "fonts/Yozai-Regular.ttf",

@@ -69,7 +69,7 @@
         /* 头像 —— 绝对定位到左侧，z-index 高于背景层 */
         .g-av {
             position: absolute;
-            left: 4px;
+            left: -4px;
             top: 50%;
             transform: translateY(-50%);
             width: 46px;
@@ -190,22 +190,21 @@
     </style>
 </head>
 <body>
-    <!-- SVG clip-path：shape_03 三角重叠凹口 + 左侧24px圆角 -->
+    <!-- SVG clip-path：shape_03 三角重叠凹口 + 左侧半圆 -->
     <!-- 原始 shape_03 路径 -->
     <svg width="0" height="0" style="position:absolute">
         <defs>
             <clipPath id="giftClip" clipPathUnits="userSpaceOnUse">
                 <path d="
-                    M 24 0
+                    M 38 0
                     L 460 0
                     L 500 0
                     L 460 38
                     L 500 76
                     L 460 76
-                    L 24 76
-                    Q 0 76 0 52
-                    L 0 24
-                    Q 0 0 24 0
+                    L 38 76
+                    Q 0 76 0 38
+                    Q 0 0 38 0
                     Z
                 " />
             </clipPath>

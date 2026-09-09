@@ -1,7 +1,7 @@
 {
-  "version": "1.0.44",
-  "build_time": "2026-09-09 13:55:01",
-  "updated_at": 1788933301,
+  "version": "1.0.46",
+  "build_time": "2026-09-10 00:10:01",
+  "updated_at": 1788970201,
   "file_count": 1054,
   "total_size": 177476102,
   "cdn_base": "https://gh-proxy.com/https://raw.githubusercontent.com/ac000108/NekoCha/main",
@@ -10,7 +10,7 @@
     "libcrypto-3-x64.dll": "de0e82160049ebdbaf32c23f49ee21bca44917d294c5ca50a231327cb6ef0002",
     "libffi-8.dll": "dd57e6016559cbdb0c59579c311bf3fc28700a8023695478c350c10943cbeac2",
     "libssl-3-x64.dll": "b65bb38dbc314973712c9692a2b9c3c8ae6b0c1889641e83b8a835f6ab3e24ac",
-    "NekoCha.exe": "d04e594ea8cb5f881dac6a9e7ead91d063930f050ecb531921b10e9b90f67a18",
+    "NekoCha.exe": "563546aafe59910846d358395474c843f4f09b72a0a57ca0ecd1a80e4e6e6dc9",
     "pyexpat.pyd": "c5a29c1eba79c46bdbe5b75cd549217d56c1ca09dafe576282be9996d80a7f5f",
     "python3.dll": "24fb5d7af90498a90abd742d8b01e4b8efcbf0797715863525d53ed84cd157ea",
     "python312.dll": "337c5e262a4f4f27565b1d1a3002a9d28aca52bec038ba2494999fe6cbce3426",
@@ -1346,7 +1346,7 @@
     {
       "name": "gift_show",
       "display_name": "礼物展示",
-      "version": "1.1.12",
+      "version": "1.1.13",
       "description": "每秒查询数据库，滚动展示最新礼物记录",
       "files": [
         {
@@ -1356,13 +1356,13 @@
         },
         {
           "path": "config.json",
-          "sha256": "56beb84ef75bbdca228b6d2608fc9cd7f45490026206d0aa1ee98d66e821b328",
+          "sha256": "907099b29d9e2a3c5ac55517ad64a302102ed4dc8801804548ca377a79fa61e2",
           "size": 379
         },
         {
           "path": "display.html",
-          "sha256": "082e8051becbe43a33b1530c067cd0b36dcd244f1bf4b9633cfd1b8331bc3113",
-          "size": 18899
+          "sha256": "d7f8f664b9d23ed1d6ff1fe96aeccbf047de4b9ff9fbcf0cefb5a2cf71250bb7",
+          "size": 18869
         }
       ]
     }

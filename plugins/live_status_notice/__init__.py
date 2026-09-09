@@ -442,11 +442,19 @@ class LiveStatusNoticePlugin(BasePlugin):
 
         if status == 1:
             self._live_start_ts = message.get('live_time') or None
-            self._on_live_start()
+            try:
+                room_info = _fetch_room_info(str(self._room_id)) if self._room_id else None
+            except Exception:
+                room_info = None
+            self._on_live_start(room_info)
         elif status in (0, 2):
             duration_sec = self._calc_duration(message)
             self._live_start_ts = None
-            self._on_live_end(duration_sec)
+            try:
+                room_info = _fetch_room_info(str(self._room_id)) if self._room_id else None
+            except Exception:
+                room_info = None
+            self._on_live_end(duration_sec, room_info)
 
     # ==================== NapCat 消息发送 ====================
 
@@ -566,10 +574,39 @@ class LiveStatusNoticePlugin(BasePlugin):
             return f'{m}m {s}s'
         return f'{s}s'
 
-    def _on_live_start(self):
+    @staticmethod
+    def _format_msg(template: str, **variables) -> str:
+        """模板变量替换，支持 {live_time} {uname} {room_id} {title} 等。
+        变量不存在时保留原样（比如开播时 {live_time} 会原样显示，调用方自行决定）。"""
+        if not template:
+            return template
+        result = template
+        for key, value in variables.items():
+            if value is None:
+                continue
+            result = result.replace(f'{{{key}}}', str(value))
+        return result
+
+    def _on_live_start(self, room_info: dict = None):
+        # 可用变量
+        variables = {
+            'uname': room_info.get('uname', '') if room_info else '',
+            'room_id': self._room_id or '',
+            'title': room_info.get('title', '') if room_info else '',
+        }
+
+        # B站弹幕
+        if self._config.get('启用B站弹幕', True) and self._config.get('开播B站弹幕', True):
+            msg = self._format_msg(self._config.get('开播弹幕', '开！'), **variables)
+            result = self.send_danmu(msg)
+            if result.get('success'):
+                print(f"[{self.name}] 开播弹幕已发送: {msg}")
+            else:
+                print(f"[{self.name}] 开播弹幕发送失败: {result}")
+
         # QQ群
         if self._config.get('启用QQ群通知', False) and self._config.get('开播QQ通知', True):
-            text = self._config.get('开播群文字', '开播啦~')
+            text = self._format_msg(self._config.get('开播群文字', '开播啦~'), **variables)
             at_all = self._config.get('开播@全体', True)
             send_image = self._config.get('开播发图片', True)
             if text:
@@ -579,14 +616,29 @@ class LiveStatusNoticePlugin(BasePlugin):
             if send_image:
                 self._send_qq_image_card(is_live=True)
 
-    def _on_live_end(self, duration_sec: int | None = None):
+    def _on_live_end(self, duration_sec: int | None = None, room_info: dict = None):
         duration_text = self._format_duration(duration_sec) if duration_sec is not None else None
+
+        # 可用变量
+        variables = {
+            'live_time': duration_text or '',
+            'uname': room_info.get('uname', '') if room_info else '',
+            'room_id': self._room_id or '',
+            'title': room_info.get('title', '') if room_info else '',
+        }
+
+        # B站弹幕
+        if self._config.get('启用B站弹幕', True) and self._config.get('下播B站弹幕', True):
+            msg = self._format_msg(self._config.get('下播弹幕', '下播啦~'), **variables)
+            result = self.send_danmu(msg)
+            if result.get('success'):
+                print(f"[{self.name}] 下播弹幕已发送: {msg}")
+            else:
+                print(f"[{self.name}] 下播弹幕发送失败: {result}")
 
         # QQ群
         if self._config.get('启用QQ群通知', False) and self._config.get('下播QQ通知', False):
-            text = self._config.get('下播群文字', '下播啦~')
-            if duration_text:
-                text = f'{text}（时长 {duration_text}）'
+            text = self._format_msg(self._config.get('下播群文字', '下播啦~'), **variables)
             at_all = self._config.get('下播@全体', False)
             send_image = self._config.get('下播发图片', False)
             if text:

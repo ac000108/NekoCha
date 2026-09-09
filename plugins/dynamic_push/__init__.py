@@ -461,24 +461,26 @@ class DynamicPushPlugin(BasePlugin):
         except (ValueError, TypeError):
             return
 
+        send_text = self._config.get('发送文字信息', True)
         notice_text = self._config.get('提醒文字', '新动态来了')
         at_all = self._config.get('@全体成员', False)
         send_card = self._config.get('发送图片卡片', True)
         send_link = self._config.get('发送动态链接', True)
         dyn_url = self._build_dynamic_url(message) if send_link else ''
 
-        # 第一条：提醒（带或不带@）
-        try:
-            segments = []
-            if at_all:
-                segments.append({'type': 'at', 'data': {'qq': 'all'}})
-                segments.append({'type': 'text', 'data': {'text': ' ' + notice_text}})
-            else:
-                segments.append({'type': 'text', 'data': {'text': notice_text}})
-            self._send_segments(group_id, segments)
-            time.sleep(0.5)
-        except Exception as e:
-            print(f"[{self.name}] 发送提醒失败: {e}")
+        # 第一条：提醒（开关控制，含@全体）
+        if send_text:
+            try:
+                segments = []
+                if at_all:
+                    segments.append({'type': 'at', 'data': {'qq': 'all'}})
+                    segments.append({'type': 'text', 'data': {'text': ' ' + notice_text}})
+                else:
+                    segments.append({'type': 'text', 'data': {'text': notice_text}})
+                self._send_segments(group_id, segments)
+                time.sleep(0.5)
+            except Exception as e:
+                print(f"[{self.name}] 发送提醒失败: {e}")
 
         # 第二条：图片卡片
         if send_card:

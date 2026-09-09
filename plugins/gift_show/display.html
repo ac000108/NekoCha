@@ -42,7 +42,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 10px 14px 10px 32px;   /* 左侧留空间给大圆角 + 头像 */
+            padding: 10px 14px 10px 0;
             animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -65,12 +65,8 @@
         }
         .gift.merged .gift-bg { animation: mergeFlash 0.45s ease-out; }
 
-        /* 头像 —— 绝对定位到左侧，z-index 高于背景层 */
+        /* 头像 —— flex 参与排版，圆心与左侧半圆圆心对齐 */
         .g-av {
-            position: absolute;
-            left: -23px;
-            top: 50%;
-            transform: translateY(-50%);
             width: 46px;
             height: 46px;
             border-radius: 50%;
@@ -79,6 +75,8 @@
             box-shadow: 0 2px 5px rgba(30, 64, 175, 0.18);
             background: #e2e8f0;
             z-index: 2;
+            margin-left: -23px;
+            flex-shrink: 0;
         }
 
         /* 中间文字区 */

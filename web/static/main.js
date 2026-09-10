@@ -74,7 +74,11 @@ function initVersionCheck() {
 
     // 点击版本号 → 有更新才弹确认，否则提示最新
     versionInfo.addEventListener('click', () => {
-        api('/api/version').then(v => {
+        api('/api/check-update').then(v => {
+            if (!v.success) {
+                showNotification(v.error || '检查更新失败', 'error');
+                return;
+            }
             if (!v.update_available) {
                 showNotification('已是最新版本', 'success');
                 return;
@@ -91,10 +95,12 @@ function initVersionCheck() {
                     showNotification('更新启动失败', 'error');
                 });
             });
+        }).catch(() => {
+            showNotification('检查更新失败', 'error');
         });
     });
 
-    // 每 1 分钟同步后端状态
+    // 每 1 分钟同步后端状态（版本号 + 插件更新发光提示）
     setInterval(() => {
         api('/api/version').then(data => {
             if (data.update_available) {
@@ -110,6 +116,14 @@ function initVersionCheck() {
                 _notifiedUpdate = false;
             }
         }).catch(() => {});
+
+        if (currentRoomId) {
+            api('/rooms/' + currentRoomId + '/plugins').then(result => {
+                if (result.success) {
+                    updatePluginBadge(result.data.updatable_count || 0);
+                }
+            }).catch(() => {});
+        }
     }, 60 * 1000);
 }
 
@@ -880,7 +894,6 @@ async function loadRoomPlugins(roomId, withMarket = false) {
         availablePlugins = data.available || [];
         window.allPluginsLoaded = true;
 
-        // 更新加号按钮红点（有更新可用时）
         updatePluginBadge(data.updatable_count || 0);
 
         const searchInput = $('pluginSearch');

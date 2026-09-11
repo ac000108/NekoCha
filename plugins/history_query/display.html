@@ -129,9 +129,26 @@
             background: var(--bg);
             color: var(--text);
         }
-        .search-input:focus, .value-input:focus { border-color: var(--primary); background: white; }
+        .search-input:focus, .value-input:focus, .time-input:focus { border-color: var(--primary); background: white; }
         .search-input { width: 280px; }
         .value-input { width: 140px; }
+        .time-input {
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+            background: var(--bg);
+            color: var(--text);
+            width: 175px;
+            cursor: pointer;
+        }
+        .time-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
         
         .btn {
             padding: 8px 18px;
@@ -366,8 +383,10 @@
         <div id="danmu" class="tab-content active">
             <div class="toolbar">
                 <input type="text" class="search-input" id="danmuKeyword" placeholder="搜索弹幕内容... (Enter 搜索)" onkeydown="if(event.key==='Enter') loadDanmu()">
+                <span class="time-label">从</span><input type="datetime-local" class="time-input" id="danmuStart">
+                <span class="time-label">到</span><input type="datetime-local" class="time-input" id="danmuEnd">
                 <button class="btn btn-primary" onclick="loadDanmu()">查询</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('danmuKeyword').value=''; loadDanmu()">重置</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('danmuKeyword').value='';document.getElementById('danmuStart').value='';document.getElementById('danmuEnd').value=''; loadDanmu()">重置</button>
             </div>
             <div class="table-scroll" id="danmuWrapper">
                 <table id="danmuTable">
@@ -382,8 +401,10 @@
             <div class="toolbar">
                 <input type="text" class="search-input" id="giftKeyword" placeholder="搜索礼物名称/盲盒... (Enter 搜索)" onkeydown="if(event.key==='Enter') loadGifts()">
                 <input type="number" class="value-input" id="giftMinValue" placeholder="最小花费(CNY)" onkeydown="if(event.key==='Enter') loadGifts()">
+                <span class="time-label">从</span><input type="datetime-local" class="time-input" id="giftStart">
+                <span class="time-label">到</span><input type="datetime-local" class="time-input" id="giftEnd">
                 <button class="btn btn-primary" onclick="loadGifts()">查询</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('giftKeyword').value='';document.getElementById('giftMinValue').value=''; loadGifts()">重置</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('giftKeyword').value='';document.getElementById('giftMinValue').value='';document.getElementById('giftStart').value='';document.getElementById('giftEnd').value=''; loadGifts()">重置</button>
             </div>
             <div class="table-scroll" id="giftWrapper">
                 <table id="giftTable">
@@ -395,6 +416,12 @@
         
         <!-- 互动 -->
         <div id="interact" class="tab-content">
+            <div class="toolbar">
+                <span class="time-label">从</span><input type="datetime-local" class="time-input" id="interactStart">
+                <span class="time-label">到</span><input type="datetime-local" class="time-input" id="interactEnd">
+                <button class="btn btn-primary" onclick="loadInteract()">查询</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('interactStart').value='';document.getElementById('interactEnd').value=''; loadInteract()">重置</button>
+            </div>
             <div class="table-scroll" id="interactWrapper">
                 <table id="interactTable">
                     <tbody><tr><td class="loading"><span class="spinner"></span>加载中...</td></tr></tbody>
@@ -405,6 +432,12 @@
         
         <!-- 舰长 -->
         <div id="guard" class="tab-content">
+            <div class="toolbar">
+                <span class="time-label">从</span><input type="datetime-local" class="time-input" id="guardStart">
+                <span class="time-label">到</span><input type="datetime-local" class="time-input" id="guardEnd">
+                <button class="btn btn-primary" onclick="loadGuard()">查询</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('guardStart').value='';document.getElementById('guardEnd').value=''; loadGuard()">重置</button>
+            </div>
             <div class="table-scroll" id="guardWrapper">
                 <table id="guardTable">
                     <tbody><tr><td class="loading"><span class="spinner"></span>加载中...</td></tr></tbody>
@@ -415,6 +448,12 @@
         
         <!-- 醒目留言 -->
         <div id="super_chat" class="tab-content">
+            <div class="toolbar">
+                <span class="time-label">从</span><input type="datetime-local" class="time-input" id="scStart">
+                <span class="time-label">到</span><input type="datetime-local" class="time-input" id="scEnd">
+                <button class="btn btn-primary" onclick="loadSC()">查询</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('scStart').value='';document.getElementById('scEnd').value=''; loadSC()">重置</button>
+            </div>
             <div class="table-scroll" id="scWrapper">
                 <table id="scTable">
                     <tbody><tr><td class="loading"><span class="spinner"></span>加载中...</td></tr></tbody>
@@ -429,6 +468,32 @@
         const ROOM_ID = _parts[1] || null;
         const PLUGIN_NAME = _parts[3] || null;
         const PAGE_SIZE = 50;
+
+        // datetime-local 值 → Unix 秒时间戳（空值返回 null）
+        function dateToTs(val) {
+            if (!val) return null;
+            const ts = Math.floor(new Date(val).getTime() / 1000);
+            return isNaN(ts) ? null : ts;
+        }
+
+        // 构建额外 AND 条件：把时间范围条件拼到已有 whereSql 后面
+        // 注意：本函数只输出 AND 片段（或空），不输出 WHERE 关键字
+        function appendTimeRange(whereSql, params, startId, endId) {
+            const startTs = dateToTs(document.getElementById(startId).value);
+            const endTs = dateToTs(document.getElementById(endId).value);
+            const parts = [];
+            if (startTs !== null) {
+                parts.push('时间戳 >= ?');
+                params.push(startTs);
+            }
+            if (endTs !== null) {
+                parts.push('时间戳 <= ?');
+                params.push(endTs);
+            }
+            if (parts.length === 0) return whereSql;
+            const extra = parts.join(' AND ');
+            return whereSql ? (whereSql + ' AND ' + extra) : extra;
+        }
 
         // 列头映射：数据库字段 -> 显示名称
         const HEADER_MAP = {
@@ -553,14 +618,15 @@
             }
 
             const keyword = document.getElementById('danmuKeyword').value.trim();
-            let dataSql, params;
+            let whereSql = '';
+            let params = [];
             if (keyword) {
-                dataSql = 'SELECT * FROM danmu WHERE 弹幕内容 LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?';
-                params = [`%${keyword}%`, PAGE_SIZE, state.offset];
-            } else {
-                dataSql = 'SELECT * FROM danmu ORDER BY id DESC LIMIT ? OFFSET ?';
-                params = [PAGE_SIZE, state.offset];
+                whereSql = '弹幕内容 LIKE ?';
+                params.push(`%${keyword}%`);
             }
+            whereSql = appendTimeRange(whereSql, params, 'danmuStart', 'danmuEnd');
+            const dataSql = `SELECT * FROM danmu${whereSql ? ' WHERE ' + whereSql : ''} ORDER BY id DESC LIMIT ? OFFSET ?`;
+            params.push(PAGE_SIZE, state.offset);
 
             try {
                 const data = await queryDB(dataSql, params);
@@ -607,20 +673,21 @@
             const minVal = parseFloat(document.getElementById('giftMinValue').value) || 0;
             const minCoin = Math.round(minVal * 1000);
             const keyword = document.getElementById('giftKeyword').value.trim();
-            let dataSql, params;
+            let whereSql = '';
+            let params = [];
             if (keyword && minCoin > 0) {
-                dataSql = 'SELECT * FROM gift WHERE (礼物名称 LIKE ? OR 盲盒名称 LIKE ?) AND 总价值 >= ? ORDER BY id DESC LIMIT ? OFFSET ?';
-                params = [`%${keyword}%`, `%${keyword}%`, minCoin, PAGE_SIZE, state.offset];
+                whereSql = '(礼物名称 LIKE ? OR 盲盒名称 LIKE ?) AND 总价值 >= ?';
+                params = [`%${keyword}%`, `%${keyword}%`, minCoin];
             } else if (keyword) {
-                dataSql = 'SELECT * FROM gift WHERE 礼物名称 LIKE ? OR 盲盒名称 LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?';
-                params = [`%${keyword}%`, `%${keyword}%`, PAGE_SIZE, state.offset];
+                whereSql = '礼物名称 LIKE ? OR 盲盒名称 LIKE ?';
+                params = [`%${keyword}%`, `%${keyword}%`];
             } else if (minCoin > 0) {
-                dataSql = 'SELECT * FROM gift WHERE 总价值 >= ? ORDER BY id DESC LIMIT ? OFFSET ?';
-                params = [minCoin, PAGE_SIZE, state.offset];
-            } else {
-                dataSql = 'SELECT * FROM gift ORDER BY id DESC LIMIT ? OFFSET ?';
-                params = [PAGE_SIZE, state.offset];
+                whereSql = '总价值 >= ?';
+                params = [minCoin];
             }
+            whereSql = appendTimeRange(whereSql, params, 'giftStart', 'giftEnd');
+            const dataSql = `SELECT * FROM gift${whereSql ? ' WHERE ' + whereSql : ''} ORDER BY id DESC LIMIT ? OFFSET ?`;
+            params.push(PAGE_SIZE, state.offset);
 
             try {
                 const data = await queryDB(dataSql, params);
@@ -663,8 +730,13 @@
                 state.done = false;
             }
 
+            let params = [];
+            const whereSql = appendTimeRange('', params, 'interactStart', 'interactEnd');
+            const dataSql = `SELECT * FROM interact${whereSql ? ' WHERE ' + whereSql : ''} ORDER BY id DESC LIMIT ? OFFSET ?`;
+            params.push(PAGE_SIZE, state.offset);
+
             try {
-                const data = await queryDB('SELECT * FROM interact ORDER BY id DESC LIMIT ? OFFSET ?', [PAGE_SIZE, state.offset]);
+                const data = await queryDB(dataSql, params);
                 const table = document.getElementById('interactTable');
                 
                 if (state.offset === 0) {
@@ -704,8 +776,13 @@
                 state.done = false;
             }
 
+            let params = [];
+            const whereSql = appendTimeRange('', params, 'guardStart', 'guardEnd');
+            const dataSql = `SELECT * FROM guard${whereSql ? ' WHERE ' + whereSql : ''} ORDER BY id DESC LIMIT ? OFFSET ?`;
+            params.push(PAGE_SIZE, state.offset);
+
             try {
-                const data = await queryDB('SELECT * FROM guard ORDER BY id DESC LIMIT ? OFFSET ?', [PAGE_SIZE, state.offset]);
+                const data = await queryDB(dataSql, params);
                 const table = document.getElementById('guardTable');
                 
                 if (state.offset === 0) {
@@ -745,8 +822,13 @@
                 state.done = false;
             }
 
+            let params = [];
+            const whereSql = appendTimeRange('', params, 'scStart', 'scEnd');
+            const dataSql = `SELECT * FROM super_chat${whereSql ? ' WHERE ' + whereSql : ''} ORDER BY id DESC LIMIT ? OFFSET ?`;
+            params.push(PAGE_SIZE, state.offset);
+
             try {
-                const data = await queryDB('SELECT * FROM super_chat ORDER BY id DESC LIMIT ? OFFSET ?', [PAGE_SIZE, state.offset]);
+                const data = await queryDB(dataSql, params);
                 const table = document.getElementById('scTable');
                 
                 if (state.offset === 0) {

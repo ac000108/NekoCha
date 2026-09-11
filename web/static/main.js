@@ -58,10 +58,10 @@ function initVersionCheck() {
     const versionText = $('versionText');
     if (!versionInfo || !versionText) return;
 
-    // 初始拉版本号
-    api('/api/version').then(data => {
+    // 初始拉版本号并检查更新
+    api('/api/check-update').then(data => {
         versionText.textContent = `v${data.current || '--'}`;
-        if (data.update_available) {
+        if (data.success && data.update_available) {
             versionInfo.classList.add('has-update');
             if (!_notifiedUpdate) {
                 showNotification(`发现新版本 v${data.latest}，点击版本号更新`, 'success', 0);
@@ -100,9 +100,10 @@ function initVersionCheck() {
         });
     });
 
-    // 每 1 分钟同步后端状态（版本号 + 插件更新发光提示）
+    // 每 1 分钟实时检查更新（版本号 + 插件更新发光提示）
     setInterval(() => {
-        api('/api/version').then(data => {
+        api('/api/check-update').then(data => {
+            if (!data.success) return;
             if (data.update_available) {
                 if (!versionInfo.classList.contains('has-update')) {
                     versionInfo.classList.add('has-update');

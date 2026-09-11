@@ -1,16 +1,16 @@
 {
-  "version": "1.0.48",
-  "build_time": "2026-09-11 10:23:44",
-  "updated_at": 1789093424,
+  "version": "1.0.49",
+  "build_time": "2026-09-11 10:35:50",
+  "updated_at": 1789094150,
   "file_count": 1054,
-  "total_size": 177446465,
+  "total_size": 177445052,
   "cdn_base": "https://gh-proxy.com/https://raw.githubusercontent.com/ac000108/NekoCha/main",
   "files": {
     "81d243bd2c585b0f4821__mypyc.pyd": "7e8e6f943b1dc7a132fbedb205f75a647c52817197c16c02f81cb358c5af5722",
     "libcrypto-3-x64.dll": "de0e82160049ebdbaf32c23f49ee21bca44917d294c5ca50a231327cb6ef0002",
     "libffi-8.dll": "dd57e6016559cbdb0c59579c311bf3fc28700a8023695478c350c10943cbeac2",
     "libssl-3-x64.dll": "b65bb38dbc314973712c9692a2b9c3c8ae6b0c1889641e83b8a835f6ab3e24ac",
-    "NekoCha.exe": "319aa22cf67f9fc654a2efc07cc133d6f78193120459a792aec65130b659d6a0",
+    "NekoCha.exe": "b700eb56d6f69a1f57ab757a76144a53f83d3667930d0ff2b7d89084103e4bf3",
     "pyexpat.pyd": "c5a29c1eba79c46bdbe5b75cd549217d56c1ca09dafe576282be9996d80a7f5f",
     "python3.dll": "24fb5d7af90498a90abd742d8b01e4b8efcbf0797715863525d53ed84cd157ea",
     "python312.dll": "337c5e262a4f4f27565b1d1a3002a9d28aca52bec038ba2494999fe6cbce3426",
@@ -1054,7 +1054,7 @@
     "propcache/_helpers_c.pyd": "228f70c637d5eb0b3f368a04b2bea054b3f4678d2021bf50475138472d34989f",
     "web/static/icon.ico": "88521918a4318f5c442fc9beefdd52460df2a3ef95763e94e0f6ae142be4e000",
     "web/static/icon.png": "a9fdaafa79442dd4944eeeb0ddfbebe5382b01a2a4d030c7c793bea68ed7adc3",
-    "web/static/main.js": "efb5d37c67c31f552c3e46f467a862e408ca3347a637287b4c0c5ea91c290d84",
+    "web/static/main.js": "d74c9bdc19f769581a75779f6fcc7998736945ced716dab70ef4ff5f8c16d8ae",
     "web/static/style.css": "63dc177422d56f3f17141c1f4e288e578823e57658e6c105763b945aa7848d5c",
     "web/static/fonts/noto-sans-sc.ttf": "2a3736a8c43339e314ed55586a8740f651a7b57e6b1cca62ace5686fe1b93b90",
     "web/templates/main.html": "b177238b09fa1d1a6f8af37b3a14317435493803336e036789b34b01a22480dd",
@@ -1160,7 +1160,7 @@
     {
       "name": "history_query",
       "display_name": "历史查询",
-      "version": "1.0.15",
+      "version": "1.0.17",
       "description": "查询历史弹幕、礼物等消息记录",
       "files": [
         {
@@ -1170,13 +1170,13 @@
         },
         {
           "path": "config.json",
-          "sha256": "ee3414770be9b31c8bc8a7161b5b355e264a719d84ab75b41e0c871ed398efa7",
+          "sha256": "3cbfaa7204ec050e0d6b20130bd2fa6a8c71b0a9820e7e10a71e3fb7c73edfea",
           "size": 172
         },
         {
           "path": "display.html",
-          "sha256": "7843e263fcbd7e83aeff32d2b74a4df57c8a539303835093b5b2daadd1b82c32",
-          "size": 45375
+          "sha256": "d2fbdc131739202c476aeb3d27ae62b61dffdf9b4532212d42dfe40b839669bd",
+          "size": 48446
         }
       ]
     },

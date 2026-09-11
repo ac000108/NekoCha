@@ -100,8 +100,10 @@ function initVersionCheck() {
         });
     });
 
-    // 每 1 分钟实时检查更新（版本号 + 插件更新发光提示）
+    // 每 1 分钟实时检查更新（版本号 + 商店插件更新发光）
     setInterval(() => {
+        if (!isLoggedIn) return;
+
         api('/api/check-update').then(data => {
             if (!data.success) return;
             if (data.update_available) {
@@ -118,8 +120,9 @@ function initVersionCheck() {
             }
         }).catch(() => {});
 
-        if (currentRoomId) {
-            api('/rooms/' + currentRoomId + '/plugins').then(result => {
+        // 在房间详情页时同时刷新商店市场数据，更新加号按钮发光
+        if (currentView === 'detail' && currentRoomId) {
+            api('/rooms/' + currentRoomId + '/plugins?with_market=true').then(result => {
                 if (result.success) {
                     updatePluginBadge(result.data.updatable_count || 0);
                 }
@@ -1620,7 +1623,7 @@ async function showMarketModal() {
         // 一次请求：后端从 CDN 拉完整商店 + 本地已安装列表
         const roomResult = await api(`/rooms/${currentRoomId}/plugins?with_market=true`);
         if (!roomResult.success || !roomResult.data) throw new Error('failed');
-        const storePlugins = roomResult.data.store_all || roomResult.data.available || [];
+        const storePlugins = roomResult.data.store_all || [];
         const installedList = roomResult.data.installed || [];
         const installedMeta = {};
         installedList.forEach(p => { installedMeta[p.name] = p; });
@@ -1630,18 +1633,6 @@ async function showMarketModal() {
     } catch (e) {
         if (contentArea) contentArea.innerHTML = '<div style="text-align:center; padding:50px; color:#666;">加载失败，请稍后重试</div>';
     }
-}
-
-function compareVersions(v1, v2) {
-    const parts1 = (v1 || '').split('.').map(Number);
-    const parts2 = (v2 || '').split('.').map(Number);
-    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
-        const p1 = parts1[i] || 0;
-        const p2 = parts2[i] || 0;
-        if (p1 > p2) return 1;
-        if (p1 < p2) return -1;
-    }
-    return 0;
 }
 
 function renderMarketPlugins(storePlugins, installedMeta) {
@@ -1656,15 +1647,13 @@ function renderMarketPlugins(storePlugins, installedMeta) {
         let btnText = '安装插件';
         let btnClass = '';
         let versionText = `v${plugin.version || '1.0.0'}`;
-        const isInstalled = !!installed;
         if (installed) {
             const installedVersion = installed.version || '1.0.0';
-            const compare = compareVersions(plugin.version, installedVersion);
-            if (compare > 0) { versionText = `v${installedVersion}→v${plugin.version}`; btnText = '更新插件'; }
-            else if (compare === 0) { btnText = '已是最新'; btnClass = 'disabled'; }
+            if (installed.can_update) { versionText = `v${installedVersion}→v${plugin.version}`; btnText = '更新插件'; }
             else { btnText = '已是最新'; btnClass = 'disabled'; }
         }
         const isDisabled = btnClass === 'disabled';
+        const isInstalled = !!installed;
         const uninstallBtn = isInstalled ? `<button class="market-btn-uninstall" onclick="uninstallMarketPlugin('${plugin.name}', '${plugin.display_name}')">🗑️ 卸载</button>` : '';
         return `<div class="market-plugin-card" data-plugin="${plugin.name}" data-name="${plugin.name}" data-desc="${plugin.description || ''}">
             <div class="market-plugin-header"><div class="market-plugin-name">${plugin.display_name}</div><span class="market-plugin-version">${versionText}</span></div>

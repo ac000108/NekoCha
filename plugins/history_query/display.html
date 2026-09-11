@@ -149,6 +149,35 @@
             color: var(--text-secondary);
             white-space: nowrap;
         }
+
+        /* 礼物汇总条 */
+        .summary-bar {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-bottom: 1px solid var(--border-light);
+            flex-shrink: 0;
+        }
+        .summary-item {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+        .summary-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .summary-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+        .summary-value.currency::before { content: 'CNY '; font-size: 12px; font-weight: 500; color: var(--text-muted); }
+        .summary-divider { width: 1px; height: 28px; background: var(--border); }
         
         .btn {
             padding: 8px 18px;
@@ -405,6 +434,22 @@
                 <span class="time-label">到</span><input type="datetime-local" class="time-input" id="giftEnd">
                 <button class="btn btn-primary" onclick="loadGifts()">查询</button>
                 <button class="btn btn-secondary" onclick="document.getElementById('giftKeyword').value='';document.getElementById('giftMinValue').value='';document.getElementById('giftStart').value='';document.getElementById('giftEnd').value=''; loadGifts()">重置</button>
+            </div>
+            <div class="summary-bar" id="giftSummaryBar">
+                <div class="summary-item">
+                    <span class="summary-label">总收入</span>
+                    <span class="summary-value currency" id="giftSummaryTotal">0.00</span>
+                </div>
+                <div class="summary-divider"></div>
+                <div class="summary-item">
+                    <span class="summary-label">礼物条数</span>
+                    <span class="summary-value" id="giftSummaryCount" style="font-size:18px;">0</span>
+                </div>
+                <div class="summary-divider"></div>
+                <div class="summary-item">
+                    <span class="summary-label">盲盒盈亏</span>
+                    <span class="summary-value currency" id="giftSummaryBlind" style="font-size:16px;">0.00</span>
+                </div>
             </div>
             <div class="table-scroll" id="giftWrapper">
                 <table id="giftTable">
@@ -686,11 +731,26 @@
                 params = [minCoin];
             }
             whereSql = appendTimeRange(whereSql, params, 'giftStart', 'giftEnd');
-            const dataSql = `SELECT * FROM gift${whereSql ? ' WHERE ' + whereSql : ''} ORDER BY id DESC LIMIT ? OFFSET ?`;
-            params.push(PAGE_SIZE, state.offset);
+            const sqlWhereClause = whereSql ? ' WHERE ' + whereSql : '';
+            const dataSql = `SELECT * FROM gift${sqlWhereClause} ORDER BY id DESC LIMIT ? OFFSET ?`;
+            const summarySql = `SELECT COALESCE(SUM(总价值),0) as total, COUNT(*) as cnt, COALESCE(SUM(CASE WHEN 是否盲盒=1 THEN 盲盒盈亏 ELSE 0 END),0) as blind_profit FROM gift${sqlWhereClause}`;
+            const dataParams = [...params, PAGE_SIZE, state.offset];
 
             try {
-                const data = await queryDB(dataSql, params);
+                // 汇总查询（params 不传分页参数）
+                const summaryRows = await queryDB(summarySql, [...params]);
+                const summary = summaryRows[0] || { total: 0, cnt: 0, blind_profit: 0 };
+                const totalCNY = (summary.total || 0) / 1000;
+                const blindCNY = (summary.blind_profit || 0) / 1000;
+                document.getElementById('giftSummaryTotal').textContent = totalCNY.toFixed(2);
+                document.getElementById('giftSummaryCount').textContent = summary.cnt || 0;
+                // 盲盒盈亏：正绿色带 + 号，负红色，零灰色
+                const blindEl = document.getElementById('giftSummaryBlind');
+                const sign = blindCNY > 0 ? '+' : '';
+                blindEl.textContent = sign + blindCNY.toFixed(2);
+                blindEl.style.color = blindCNY > 0 ? '#10b981' : (blindCNY < 0 ? '#ef4444' : 'var(--text-muted)');
+
+                const data = await queryDB(dataSql, dataParams);
                 const table = document.getElementById('giftTable');
                 
                 if (state.offset === 0) {

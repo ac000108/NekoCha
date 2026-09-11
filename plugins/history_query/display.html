@@ -437,7 +437,7 @@
             </div>
             <div class="summary-bar" id="giftSummaryBar">
                 <div class="summary-item">
-                    <span class="summary-label">总收入</span>
+                    <span class="summary-label">实际收入</span>
                     <span class="summary-value currency" id="giftSummaryTotal">0.00</span>
                 </div>
                 <div class="summary-divider"></div>
@@ -740,9 +740,10 @@
                 // 汇总查询（params 不传分页参数）
                 const summaryRows = await queryDB(summarySql, [...params]);
                 const summary = summaryRows[0] || { total: 0, cnt: 0, blind_profit: 0 };
-                const totalCNY = (summary.total || 0) / 1000;
                 const blindCNY = (summary.blind_profit || 0) / 1000;
-                document.getElementById('giftSummaryTotal').textContent = totalCNY.toFixed(2);
+                // 实际收入 = 总价值 + 盲盒盈亏
+                const actualCNY = ((summary.total || 0) + (summary.blind_profit || 0)) / 1000;
+                document.getElementById('giftSummaryTotal').textContent = actualCNY.toFixed(2);
                 document.getElementById('giftSummaryCount').textContent = summary.cnt || 0;
                 // 盲盒盈亏：正绿色带 + 号，负红色，零灰色
                 const blindEl = document.getElementById('giftSummaryBlind');

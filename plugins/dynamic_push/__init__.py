@@ -18,7 +18,7 @@ def _download_image(url: str):
         with urllib.request.urlopen(req, timeout=10) as resp:
             data = resp.read()
         from PIL import Image
-        return Image.open(io.BytesIO(data)).convert('RGB')
+        return Image.open(io.BytesIO(data)).convert('RGBA')
     except Exception:
         return None
 
@@ -55,11 +55,12 @@ def draw_dynamic_card(msg: dict) -> bytes:
         return font(size)
 
     def char_in_font(f, ch):
-        # FreeTypeFont 没有 get_charmap() 了，用 textbbox 试测：
-        # 如果主字体渲染该字符的宽度 > 0，且和 fallback 渲染宽度差异不大，
-        # 就认为主字体支持。这里简化为主字体加载成功就返回 True，
-        # fallback_font 链的 msyh.ttc 兜底即可覆盖所有情况。
-        return True
+        """检测主字体是否支持该字符：getbbox 返回有效宽度就算支持"""
+        try:
+            bbox = f.getbbox(ch)
+            return bbox is not None and bbox[2] > bbox[0]
+        except Exception:
+            return False
 
     def wrap_text(draw_obj, text, fnt, max_width):
         if not text:
@@ -103,6 +104,8 @@ def draw_dynamic_card(msg: dict) -> bytes:
                 if seg not in emoji_cache:
                     em = _download_image(emoji_map[seg])
                     if em:
+                        # 统一转 RGBA，确保透明度通道正确（B 站表情可能是 P 模式或无 alpha 的 RGB）
+                        em = em.convert('RGBA')
                         em = em.resize((emoji_size, emoji_size), Image.LANCZOS)
                     emoji_cache[seg] = em
                 em = emoji_cache[seg]
@@ -110,7 +113,7 @@ def draw_dynamic_card(msg: dict) -> bytes:
                     if cur_x + emoji_size > x + max_width:
                         cur_x = x
                         cur_y += line_height
-                    img_obj.paste(em, (cur_x, cur_y + (line_height - emoji_size) // 2), em if em.mode == 'RGBA' else None)
+                    img_obj.paste(em, (cur_x, cur_y + (line_height - emoji_size) // 2), em)
                     cur_x += emoji_size
                 else:
                     use_font = fnt if char_in_font(fnt, seg) else fb_font
@@ -321,11 +324,13 @@ def draw_dynamic_card(msg: dict) -> bytes:
     y += header_h
 
     if dyn_title:
-        title_font_draw = font(s(24))
-        title_fb_font_draw = fallback_font(s(24))
+        title_font_draw = font(s(26))
+        title_fb_font_draw = fallback_font(s(26))
         for line in title_lines:
-            y = draw_line_fallback(draw, img, line, title_font_draw, title_fb_font_draw, '#00B5E2', MARGIN, y, content_width, s(32))
-        y += s(4)
+            # 偏移画两次模拟加粗，颜色用深黑（不用蓝色）
+            draw_line_fallback(draw, img, line, title_font_draw, title_fb_font_draw, '#18191C', MARGIN + 1, y + 1, content_width, 0)
+            y = draw_line_fallback(draw, img, line, title_font_draw, title_fb_font_draw, '#18191C', MARGIN, y, content_width, s(34))
+        y += s(2)
 
     if text_content:
         y = draw_text_with_emoji(draw, img, text_content, body_font, merged_emoji_map, MARGIN, y, content_width, s(36))
@@ -370,7 +375,9 @@ def draw_dynamic_card(msg: dict) -> bytes:
             desc_lines[-1] = desc_lines[-1][:-1] + '…'
         cy = y + s(4)
         for line in title_lines:
-            cy = draw_line_fallback(draw, img, line, title_font_card, title_fb_font_card, '#00B5E2', text_x, cy, text_area_w, s(32))
+            # 偏移画两次模拟加粗，颜色用深黑
+            draw_line_fallback(draw, img, line, title_font_card, title_fb_font_card, '#18191C', text_x + 1, cy + 1, text_area_w, 0)
+            cy = draw_line_fallback(draw, img, line, title_font_card, title_fb_font_card, '#18191C', text_x, cy, text_area_w, s(32))
         if desc_lines:
             cy += s(6)
         for line in desc_lines:

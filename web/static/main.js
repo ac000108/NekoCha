@@ -1033,24 +1033,25 @@ function renderSidebarPlugins(plugins) {
         const displayBtn = plugin.has_display
             ? `<button class="btn toggle-btn mode-btn display-btn" onclick="event.stopPropagation(); window.open('/rooms/${currentRoomId}/plugins/${plugin.name}/display-page', '_blank')" title="打开展示页">D</button>`
             : '';
+        const mode = plugin.mode || 'manual';
         let switchBtn;
-        if (plugin.automatic) {
+        if (mode === 'auto') {
             const onLive = plugin.live_status === 1;
             switchBtn = `<button class="btn toggle-btn mode-btn auto-mode ${onLive ? 'enabled' : 'disabled'}"
                                 onclick="event.stopPropagation(); cyclePluginMode('${plugin.name}')"
                                 title="自动模式 · ${onLive ? '开播中' : '未开播'}">A</button>`;
-        } else if (plugin.enabled) {
+        } else if (mode === 'manual') {
             switchBtn = `<button class="btn toggle-btn mode-btn enabled"
                                 onclick="event.stopPropagation(); cyclePluginMode('${plugin.name}')"
                                 title="手动启用">✓</button>`;
         } else {
             switchBtn = `<button class="btn toggle-btn mode-btn disabled"
                                 onclick="event.stopPropagation(); cyclePluginMode('${plugin.name}')"
-                                title="手动禁用">✗</button>`;
+                                title="已禁用">✗</button>`;
         }
         item.innerHTML = `
             <div class="plugin-row">
-                <span class="status-dot ${plugin.automatic ? (plugin.live_status === 1 ? 'online' : 'offline') : (plugin.enabled ? 'online' : 'offline')}"></span>
+                <span class="status-dot ${mode === 'auto' ? (plugin.live_status === 1 ? 'online' : 'offline') : (mode === 'off' ? 'offline' : 'online')}"></span>
                 <span class="plugin-name">${plugin.display_name}</span>
                 <div class="plugin-actions">
                     ${displayBtn}
@@ -1114,27 +1115,17 @@ async function cyclePluginMode(name) {
 
     _pluginSwitchingLock[name] = true;
 
-    let target = {};
-    let msg = '';
+    const order = ['off', 'manual', 'auto'];
+    const currentMode = plugin.mode || 'manual';
+    const nextMode = order[(order.indexOf(currentMode) + 1) % 3];
 
-    if (plugin.automatic) {
-        // 自动模式 → 切回手动启用
-        target = { enabled: true, config: { automatic: false } };
-        msg = '已切回手动启用';
-    } else if (plugin.enabled) {
-        // 手动启用 → 手动禁用
-        target = { enabled: false };
-        msg = '已禁用插件';
-    } else {
-        // 手动禁用 → 自动模式
-        target = { config: { automatic: true } };
-        msg = '已启用自动控制';
-    }
+    const msgMap = { 'off': '已禁用', 'manual': '已手动启用', 'auto': '已切换自动模式' };
 
     try {
-        const result = await api('/rooms/' + currentRoomId + '/plugins/' + name, 'PUT', target);
+        const result = await api('/rooms/' + currentRoomId + '/plugins/' + name, 'PUT', { mode: nextMode });
         if (result.success) {
-            showNotification(msg);
+            showNotification(msgMap[nextMode]);
+            plugin.mode = nextMode;
             // 后台刷新插件列表（不阻塞 UI 响应）
             loadRoomPlugins(currentRoomId).catch(() => {});
         } else {
@@ -1170,7 +1161,7 @@ async function openPluginSettings(pluginName, displayName) {
                 'display_name': plugin.display_name,
                 'config': plugin.config,
                 'has_display': plugin.has_display,
-                'enabled': plugin.enabled,
+                'mode': plugin.mode,
                 'has_room_override': plugin.has_room_override
             });
         } else {
@@ -1206,8 +1197,8 @@ async function cancelPluginSettings(pluginName) {
 
 // ==================== 插件配置渲染 ====================
 
-const EXCLUDE_FIELDS = ['name', 'version', 'enabled', 'automatic'];
-const FIELD_NAMES = { 'name': '插件名称', 'version': '版本', 'description': '描述', 'enabled': '启用',
+const EXCLUDE_FIELDS = ['name', 'version', 'mode'];
+const FIELD_NAMES = { 'name': '插件名称', 'version': '版本', 'description': '描述', 'mode': '运行模式',
     // 分组标题映射 (gid → 显示名)
     'bili': 'B站弹幕',
     'qq': 'QQ群通知',
@@ -1556,8 +1547,7 @@ async function savePluginSettings() {
         const mergedConfig = _fullConfigCache ? JSON.parse(JSON.stringify(_fullConfigCache)) : {};
         Object.assign(mergedConfig, config);
         // 系统保留字段：由 cyclePluginMode 单独维护，不随设置保存
-        delete mergedConfig.enabled;
-        delete mergedConfig.automatic;
+        delete mergedConfig.mode;
 
         const result = await api(
             '/rooms/' + currentRoomId + '/plugins/' + pluginName,

@@ -1,15 +1,15 @@
 {
-  "version": "1.0.75",
-  "build_time": "2026-09-16 20:44:27",
-  "updated_at": 1789562667,
+  "version": "1.0.76",
+  "build_time": "2026-09-16 22:32:33",
+  "updated_at": 1789569153,
   "file_count": 1055,
-  "total_size": 200779567,
+  "total_size": 200936250,
   "files": {
     "81d243bd2c585b0f4821__mypyc.pyd": "7e8e6f943b1dc7a132fbedb205f75a647c52817197c16c02f81cb358c5af5722",
     "libcrypto-3-x64.dll": "de0e82160049ebdbaf32c23f49ee21bca44917d294c5ca50a231327cb6ef0002",
     "libffi-8.dll": "dd57e6016559cbdb0c59579c311bf3fc28700a8023695478c350c10943cbeac2",
     "libssl-3-x64.dll": "b65bb38dbc314973712c9692a2b9c3c8ae6b0c1889641e83b8a835f6ab3e24ac",
-    "NekoCha.exe": "7352dacc5f11baef7b00a521beb6a3e19d0fe2f14fa255561b7a8e5769a8d2e9",
+    "NekoCha.exe": "b01ab87703148a82bdf324ce1742cedf58aa70da8cde13dccf7506f5f4695b7a",
     "pyexpat.pyd": "c5a29c1eba79c46bdbe5b75cd549217d56c1ca09dafe576282be9996d80a7f5f",
     "python3.dll": "24fb5d7af90498a90abd742d8b01e4b8efcbf0797715863525d53ed84cd157ea",
     "python312.dll": "337c5e262a4f4f27565b1d1a3002a9d28aca52bec038ba2494999fe6cbce3426",
@@ -82,7 +82,7 @@
     "Launcher/libcrypto-3-x64.dll": "de0e82160049ebdbaf32c23f49ee21bca44917d294c5ca50a231327cb6ef0002",
     "Launcher/libffi-8.dll": "dd57e6016559cbdb0c59579c311bf3fc28700a8023695478c350c10943cbeac2",
     "Launcher/libssl-3-x64.dll": "b65bb38dbc314973712c9692a2b9c3c8ae6b0c1889641e83b8a835f6ab3e24ac",
-    "Launcher/NekoCha-Launcher.exe": "f1fa16fb802db6dffbe9bea07e707c0be8e69edb8a01ea48950a190470569ad9",
+    "Launcher/NekoCha-Launcher.exe": "df8958b5a4eca8a93bba4b5a42b6a795a612e64eaf94e849b88e10c1c68c08fa",
     "Launcher/pyexpat.pyd": "c5a29c1eba79c46bdbe5b75cd549217d56c1ca09dafe576282be9996d80a7f5f",
     "Launcher/python312.dll": "337c5e262a4f4f27565b1d1a3002a9d28aca52bec038ba2494999fe6cbce3426",
     "Launcher/pythoncom312.dll": "fe0597912ceb85c650e5a86d9eab290f7b8846c8068fcfe8c079e2a1e661f9b6",
@@ -1057,7 +1057,7 @@
     "web/static/style.css": "18d951df9750f6de19658e6b9ebc9da0ef768b02d88d4b057ea48e83f91ac82b",
     "web/static/fonts/lxgw-wenkai.ttf": "04cb8ba4597c6b2465bad5a071f6b0f6dadf9de90346d3ab4cb2050c11704b23",
     "web/static/fonts/yozai.ttf": "4174a0123d90d76b5a617a3cf02d7920edc668e7de80ada3a233c71bd6c03ecc",
-    "web/templates/main.html": "f634edd573351d4212884b4c04edeed9a6c0622dd60966f1fe11620c1ed3e1f2",
+    "web/templates/main.html": "c6a82611668b5404aee5e98cd597da6e1b3870cd230997b486f5b5828c284826",
     "websockets/speedups.pyd": "4142d854639e4d442f731874021571d58b09bceb3b7de90a61c44e3cc66d6350",
     "yarl/_quoting_c.pyd": "e02b479ae364efece32aab0037590d5c96cfb2e9abb32208b295cdb084b975f2"
   }

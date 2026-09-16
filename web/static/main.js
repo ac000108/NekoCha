@@ -643,63 +643,12 @@ async function toggleRoomListen(roomId, btn) {
         } else {
             showNotification(result.message || actionLabel + '失败', 'error');
         }
-        await updateSingleRoomStatus(roomId);
+        await refreshAllRoomStatus();
     } catch (e) {
         showNotification('操作失败', 'error');
     } finally {
         btn.disabled = false;
     }
-}
-
-async function updateSingleRoomStatus(roomId) {
-    try {
-        const result = await api('/rooms/status');
-        if (!result.success || !result.data[roomId]) return;
-        const status = result.data[roomId];
-
-        // 更新房间列表卡片
-        const cards = document.querySelectorAll('.room-card');
-        cards.forEach(card => {
-            const idEl = card.querySelector('.room-card-id');
-            if (idEl && idEl.textContent === roomId) {
-                const st = getRoomStatusInfo(status);
-                card.classList.remove('room-online', 'room-round', 'room-not-live', 'room-off');
-                card.classList.add(st.cls);
-                // 更新状态文字
-                const textEl = card.querySelector('.room-card-status-text');
-                if (textEl) textEl.textContent = st.text;
-                const statusLine = card.querySelector('.room-card-status-line');
-                if (statusLine) statusLine.style.visibility = st.text ? '' : 'hidden';
-                // 更新按钮
-                const btn = card.querySelector('.room-action-btn:not(.room-delete-btn)');
-                if (btn) {
-                    btn.innerHTML = status.is_listening ? '■' : '▶';
-                    btn.title = status.is_listening ? '停止监听' : '开始监听';
-                }
-            }
-        });
-
-        // 更新列表项
-        const items = document.querySelectorAll('.room-list-item');
-        items.forEach(item => {
-            const idEl = item.querySelector('.room-item-id');
-            if (idEl && idEl.textContent === roomId) {
-                const st = getRoomStatusInfo(status);
-                const badge = item.querySelector('.listening-badge');
-                if (st.badge) {
-                    if (!badge) {
-                        const newBadge = document.createElement('span');
-                        newBadge.className = `listening-badge ${st.badge}`;
-                        item.querySelector('.room-item-status')?.appendChild(newBadge);
-                    } else {
-                        badge.className = `listening-badge ${st.badge}`;
-                    }
-                } else if (badge) {
-                    badge.remove();
-                }
-            }
-        });
-    } catch (e) {}
 }
 
 // ==================== 房间详情视图 ====================
@@ -823,57 +772,61 @@ function startDetailStatusPolling() {
     }, 5000);
 }
 
+async function refreshAllRoomStatus() {
+    try {
+        const result = await api('/rooms/status');
+        if (!result.success) return;
+        document.querySelectorAll('.room-card').forEach(card => {
+            const id = card.querySelector('.room-card-id')?.textContent;
+            if (id && result.data[id]) {
+                const status = result.data[id];
+                const st = getRoomStatusInfo(status);
+                const targetCls = status.is_listening ? st.cls : 'room-off';
+                if (!card.classList.contains(targetCls)) {
+                    card.classList.remove('room-online', 'room-round', 'room-not-live', 'room-off');
+                    card.classList.add(targetCls);
+                }
+                const textEl = card.querySelector('.room-card-status-text');
+                if (textEl) textEl.textContent = st.text;
+                const statusLine = card.querySelector('.room-card-status-line');
+                if (statusLine) statusLine.style.visibility = st.text ? '' : 'hidden';
+                const actionBtn = card.querySelector('.room-action-btn:not(.room-delete-btn)');
+                if (actionBtn) {
+                    actionBtn.innerHTML = status.is_listening ? '■' : '▶';
+                    actionBtn.title = status.is_listening ? '停止监听' : '开始监听';
+                }
+            }
+        });
+        document.querySelectorAll('.room-list-item').forEach(item => {
+            const idEl = item.querySelector('.room-item-id');
+            if (idEl && result.data[idEl.textContent]) {
+                const status = result.data[idEl.textContent];
+                const statusContainer = item.querySelector('.room-item-status');
+                if (statusContainer) {
+                    if (status.is_listening) {
+                        const ls = status.live_status;
+                        const cls = ls === 1 ? 'badge-live' : (ls === 2 ? 'badge-round' : 'badge-not-live');
+                        const badge = statusContainer.querySelector('.listening-badge');
+                        if (!badge) {
+                            statusContainer.innerHTML = `<span class="listening-badge ${cls}"></span>`;
+                        } else if (!badge.classList.contains(cls)) {
+                            badge.className = `listening-badge ${cls}`;
+                        }
+                    } else if (statusContainer.querySelector('.listening-badge')) {
+                        statusContainer.innerHTML = '';
+                    }
+                }
+            }
+        });
+    } catch (e) {
+        // 静默忽略
+    }
+}
+
 function startRoomStatusPolling() {
     if (roomStatusPollingTimer) clearInterval(roomStatusPollingTimer);
-    roomStatusPollingTimer = setInterval(async () => {
-        if (currentView === 'rooms') {
-            try {
-                const result = await api('/rooms/status');
-                if (result.success) {
-                    document.querySelectorAll('.room-card').forEach(card => {
-                        const id = card.querySelector('.room-card-id')?.textContent;
-                        if (id && result.data[id]) {
-                            const status = result.data[id];
-                            const st = getRoomStatusInfo(status);
-                            card.classList.remove('room-online', 'room-round', 'room-not-live', 'room-off');
-                            if (status.is_listening) {
-                                card.classList.add(st.cls);
-                            } else {
-                                card.classList.add('room-off');
-                            }
-                            // 同步更新状态文字
-                            const textEl = card.querySelector('.room-card-status-text');
-                            if (textEl) textEl.textContent = st.text;
-                            const statusLine = card.querySelector('.room-card-status-line');
-                            if (statusLine) statusLine.style.visibility = st.text ? '' : 'hidden';
-                            const actionBtn = card.querySelector('.room-action-btn:not(.room-delete-btn)');
-                            if (actionBtn) {
-                                actionBtn.innerHTML = status.is_listening ? '■' : '▶';
-                                actionBtn.title = status.is_listening ? '停止监听' : '开始监听';
-                            }
-                        }
-                    });
-                    document.querySelectorAll('.room-list-item').forEach(item => {
-                        const idEl = item.querySelector('.room-item-id');
-                        if (idEl && result.data[idEl.textContent]) {
-                            const status = result.data[idEl.textContent];
-                            const statusContainer = item.querySelector('.room-item-status');
-                            if (statusContainer) {
-                                if (status.is_listening) {
-                                    const ls = status.live_status;
-                                    const cls = ls === 1 ? 'badge-live' : (ls === 2 ? 'badge-round' : 'badge-not-live');
-                                    statusContainer.innerHTML = `<span class="listening-badge ${cls}"></span>`;
-                                } else {
-                                    statusContainer.innerHTML = '';
-                                }
-                            }
-                        }
-                    });
-                }
-            } catch (e) {
-                // 静默忽略轮询失败
-            }
-        }
+    roomStatusPollingTimer = setInterval(() => {
+        if (currentView === 'rooms') refreshAllRoomStatus();
     }, 5000);
 }
 
@@ -1645,7 +1598,7 @@ function renderMarketPlugins(storePlugins, installedMeta) {
         const isDisabled = btnClass === 'disabled';
         const isInstalled = !!installed;
         const uninstallBtn = isInstalled ? `<button class="market-btn-uninstall" onclick="uninstallMarketPlugin('${plugin.name}', '${plugin.display_name}')">🗑️ 卸载</button>` : '';
-        return `<div class="market-plugin-card" data-plugin="${plugin.name}" data-name="${plugin.name}" data-desc="${plugin.description || ''}">
+        return `<div class="market-plugin-card" data-plugin="${plugin.name}">
             <div class="market-plugin-header"><div class="market-plugin-name">${plugin.display_name}</div><span class="market-plugin-version">${versionText}</span></div>
             <div class="market-plugin-desc">${plugin.description || ''}</div>
             <div class="market-card-actions">
@@ -1662,8 +1615,8 @@ function filterMarketPlugins() {
     const cards = document.querySelectorAll('.market-plugin-card');
     const query = input ? input.value.toLowerCase().trim() : '';
     cards.forEach(card => {
-        const name = card.getAttribute('data-name') || card.querySelector('.market-plugin-name')?.textContent.toLowerCase() || '';
-        const desc = card.getAttribute('data-desc') || card.querySelector('.market-plugin-desc')?.textContent.toLowerCase() || '';
+        const name = card.querySelector('.market-plugin-name')?.textContent.toLowerCase() || '';
+        const desc = card.querySelector('.market-plugin-desc')?.textContent.toLowerCase() || '';
         card.style.display = (name.includes(query) || desc.includes(query)) ? 'flex' : 'none';
     });
 }
